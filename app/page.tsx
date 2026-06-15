@@ -68,7 +68,7 @@ export default async function Home({ searchParams }: any) {
                                     </div>
                                     <div className="p-2.5">
                                         <h2 className="text-sm font-medium line-clamp-2 leading-snug mb-1 text-slate-100">{m.title}</h2>
-                                        <p className="text-xs text-indigo-400 font-semibold">★ {m.vote_average.toFixed(1)}</p>
+                                        <p className="text-xs text-indigo-400 font-semibold">★ {m.vote_average?.toFixed(1) || "No rating"}</p>
                                     </div>
                                 </Link>
                             ))}

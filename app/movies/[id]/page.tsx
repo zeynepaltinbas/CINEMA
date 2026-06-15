@@ -63,7 +63,7 @@ export default async function MovieInfo({ params, searchParams }: any) {
                             <p className="font-medium text-sm text-slate-100">{movie.status}</p>
                         </div>
                         <div className="bg-[#1e293b] rounded-xl p-3 border border-[#2d3f55]">
-                            <p className="text-xs text-slate-400 mb-1">Released</p>
+                            <p className="text-xs text-slate-400 mb-1">Release Date</p>
                             <p className="font-medium text-sm text-slate-100">{movie.release_date}</p>
                         </div>
                         <div className="bg-[#1e293b] rounded-xl p-3 border border-[#2d3f55]">

@@ -15,7 +15,7 @@ export default function SortMenu({ currentFilters, currentGenre }: SortMenuProps
                 <label htmlFor="genre-filter" className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Genre
                 </label>
-                <select name="genre" id="genre-filter" defaultValue={currentGenre} 
+                <select name="genre" id="genre-filter" value={currentGenre} 
                     // e: the event object
                     // target: the HTML element that triggered the event
                     // form? : if the form cannot be found for some reason, do not crash the website
@@ -48,12 +48,13 @@ export default function SortMenu({ currentFilters, currentGenre }: SortMenuProps
                 <label htmlFor="sort-by" className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Sort By
                 </label>
-                <select name="sort" id="sort-by" defaultValue={currentFilters}
+                <select name="sort" id="sort-by" value={currentFilters}
                     onChange={(e) => e.target.form?.submit()}
                     className="w-full bg-[#0f172a] border border-[#2d3f55] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-400 cursor-pointer"
                 >
                     <option value="popularity.desc">Popularity (High to Low)</option>
                     <option value="vote_average.desc">Rating (High to Low)</option>
+                    <option value="vote_average.asc">Rating (Low to High)</option>
                     <option value="primary_release_date.desc">Release Date (Newest)</option>
                     <option value="primary_release_date.asc">Release Date (Oldest)</option>
                 </select>
