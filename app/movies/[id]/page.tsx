@@ -7,6 +7,8 @@ export default async function MovieInfo({ params, searchParams }: any) {
     const searchPar = await searchParams
     const returnPage = searchPar.from || 1
     const searchQuery = searchPar.query || ''
+    const genre = searchPar.genre || ''
+    const sort = searchPar.sort || ''
 
     const res = await fetch(
         `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_API_KEY}`
@@ -15,9 +17,8 @@ export default async function MovieInfo({ params, searchParams }: any) {
 
     return (
         <main className="min-h-screen px-4 py-10 max-w-5xl mx-auto">
-
             <Link
-                href={`/?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}`}
+                href={`/?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}${genre ? `&genre=${genre}` : ''}${sort ? `&sort=${sort}` : ''}`}
                 className="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 transition-colors mb-10 text-sm font-medium"
             >
                 ← Go back
@@ -34,7 +35,6 @@ export default async function MovieInfo({ params, searchParams }: any) {
                 </div>
 
                 <div className="flex flex-col gap-5 min-w-0">
-
                     <div>
                         <h1 className="text-3xl font-bold mb-1 text-slate-100">{movie.title}</h1>
                         <p className="text-slate-400 italic text-sm">{movie.tagline}</p>
@@ -75,10 +75,8 @@ export default async function MovieInfo({ params, searchParams }: any) {
                     <p className="text-sm text-slate-400">
                         Original language: <span className="text-slate-100 font-medium uppercase">{movie.original_language}</span>
                     </p>
-
                 </div>
             </div>
-
         </main>
     )
 }
