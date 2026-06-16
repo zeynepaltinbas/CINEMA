@@ -1,0 +1,87 @@
+import Link from "next/link";
+
+export default async function SeriesInfo({ params, searchParams }: any) {
+    const params2 = await params
+    const seriesId = params2.id
+    const searchPar = await searchParams
+    const returnPage = searchPar.from || 1
+    const searchQuery = searchPar.query || ''
+    const genre = searchPar.genre || ''
+    const sort = searchPar.sort || ''
+
+    const res = await fetch(
+        `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${process.env.TMDB_API_KEY}`
+    )
+    const show = await res.json()
+
+    return (
+        <main className="min-h-screen px-4 py-10 max-w-5xl mx-auto">
+            <Link
+                href={`/tv?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}${genre ? `&genre=${genre}` : ''}${sort ? `&sort=${sort}` : ''}`}
+                className="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 transition-colors mb-10 text-sm font-medium"
+            >
+                ← Go back
+            </Link>
+
+            <div className="flex flex-col md:flex-row gap-10">
+                <div className="shrink-0 mx-auto md:mx-0">
+                    <img
+                        src={show.poster_path ? `https://image.tmdb.org/t/p/w500${show.poster_path}` : "https://placehold.co/500x750/1e293b/94a3b8?text=No+Poster"}
+                        alt={show.name}
+                        className="w-52 md:w-64 rounded-2xl shadow-lg"
+                    />
+                </div>
+
+                <div className="flex flex-col gap-5 min-w-0">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-1 text-slate-100">{show.name}</h1>
+                        <p className="text-slate-400 italic text-sm">{show.tagline}</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        {show.genres?.map((g: any) => (
+                            <span key={g.id} className="text-xs bg-indigo-400/20 text-indigo-400 px-3 py-1 rounded-full font-medium">
+                                {g.name}
+                            </span>
+                        ))}
+                    </div>
+
+                    <div>
+                        <p className="text-xs uppercase tracking-widest text-slate-400 font-semibold mb-2">Summary</p>
+                        <p className="text-slate-300 leading-relaxed text-sm">{show.overview}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="bg-[#1e293b] rounded-xl p-3 border border-[#2d3f55]">
+                            <p className="text-xs text-slate-400 mb-1">Rating</p>
+                            <p className="text-indigo-400 font-bold">★ {show.vote_average?.toFixed(1) || "N/A"}</p>
+                        </div>
+                        
+                        <div className="bg-[#1e293b] rounded-xl p-3 border border-[#2d3f55]">
+                            <p className="text-xs text-slate-400 mb-1">Seasons</p>
+                            <p className="font-medium text-sm text-slate-100">
+                                {show.number_of_seasons} {show.number_of_seasons === 1 ? "Season" : "Seasons"}
+                            </p>
+                        </div>
+                        
+                        <div className="bg-[#1e293b] rounded-xl p-3 border border-[#2d3f55]">
+                            <p className="text-xs text-slate-400 mb-1">First Air Date</p>
+                            <p className="font-medium text-sm text-slate-100">{show.first_air_date || "Unknown"}</p>
+                        </div>
+                        
+                        <div className="bg-[#1e293b] rounded-xl p-3 border border-[#2d3f55]">
+                            <p className="text-xs text-slate-400 mb-1">Episodes</p>
+                            <p className="font-medium text-sm text-slate-100">
+                                {show.number_of_episodes} {show.number_of_episodes === 1 ? "Episode" : "Episodes"}
+                            </p>
+                        </div>
+                    </div>
+
+                    <p className="text-sm text-slate-400">
+                        Original language: <span className="text-slate-100 font-medium uppercase">{show.original_language}</span>
+                    </p>
+                </div>
+            </div>
+        </main>
+    )
+}
