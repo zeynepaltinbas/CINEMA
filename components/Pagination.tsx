@@ -4,18 +4,19 @@ interface PaginationProps {
     currentPage: number;
     totalPages: number;
     searchQuery: string;
-    moviesLength: number;
+    itemsLength: number;
     currentSort: string;
     currentGenre: string;
+    type?: "movies" | "tv";
 }
 
-export default async function Pagination({ currentPage, totalPages, searchQuery, moviesLength, currentGenre, currentSort }: PaginationProps) {
+export default function Pagination({ currentPage, totalPages, searchQuery, itemsLength, currentGenre, currentSort, type = "movies" }: PaginationProps) {
     return (
         <div className="flex flex-col items-center justify-center w-full">
             {/* pagination */}
             <div className="flex items-center justify-center gap-4 mt-12">
                 {currentPage > 1 ? (
-                    <Link href={`/?page=${currentPage - 1}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}`}>
+                    <Link href={`/${type}?page=${currentPage - 1}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}`}>
                         <button className="px-4 py-2 bg-[#1e293b] border border-[#2d3f55] hover:bg-[#2d3f55] rounded-lg transition-colors cursor-pointer text-sm text-slate-100">
                             Previous
                         </button>
@@ -29,7 +30,7 @@ export default async function Pagination({ currentPage, totalPages, searchQuery,
                     Page {currentPage} of {totalPages}
                 </span>
                 {currentPage < totalPages ? (
-                    <Link href={`/?page=${currentPage + 1}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}`}>
+                    <Link href={`/${type}?page=${currentPage + 1}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}`}>
                         <button className="px-4 py-2 bg-[#1e293b] border border-[#2d3f55] hover:bg-[#2d3f55] rounded-lg transition-colors cursor-pointer text-sm text-slate-100">
                             Next
                         </button>
@@ -42,8 +43,8 @@ export default async function Pagination({ currentPage, totalPages, searchQuery,
             </div>
 
             {/* go to page... */}
-            {moviesLength > 0 && (
-                <form action="/" method="GET" className="flex items-center justify-center gap-2 mt-4 text-slate-400 text-sm">
+            {itemsLength > 0 && (
+                <form action={`/${type}`} method="GET" className="flex items-center justify-center gap-2 mt-4 text-slate-400 text-sm">
                     {searchQuery && <input type="hidden" name="query" value={searchQuery} />}
                     <label htmlFor="jump-page">Go to page: </label>
                     <input type="number" id="jump-page" name="page" min="1" 

@@ -5,11 +5,12 @@
 interface SortMenuProps {
     currentFilters: string;
     currentGenre: string;
+    type: "movies" | "tv"
 }
 
-export default function SortMenu({ currentFilters, currentGenre }: SortMenuProps) {
+export default function SortMenu({ currentFilters, currentGenre, type = "movies" }: SortMenuProps) {
     return (
-        <form action="/" method="GET" className="flex flex-col gap-5 bg-[#1e293b] border border-[#2d3f55] p-5 rounded-2xl w-full">
+        <form action={`/${type}`} method="GET" className="flex flex-col gap-5 bg-[#1e293b] border border-[#2d3f55] p-5 rounded-2xl w-full">
             {/* filter by genre */}
             <div className="flex flex-col gap-1.5">
                 <label htmlFor="genre-filter" className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
