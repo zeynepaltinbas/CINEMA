@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Pagination from "@/components/Pagination"
 import SortMenu from "@/components/SortMenu"
+import ShowBox from "@/components/ShowBox"
 // @ means root directory --> also declared in tsconfig.json
 
 // searchParams: query params
@@ -53,24 +54,15 @@ export default async function Home({ searchParams }: any) {
                     {movies.length > 0 ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                             {movies.map((m: any) => (
-                                <Link
-                                    href={`/movies/${m.id}?from=${currentPage}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}`}
+                                <ShowBox
                                     key={m.id}
-                                    className="group bg-[#1e293b] border border-[#2d3f55] rounded-xl overflow-hidden hover:scale-[1.03] hover:border-indigo-400/50 transition-all duration-200"
-                                >
-                                    <div className="relative aspect-2/3">
-                                        <img
-                                            src={`https://image.tmdb.org/t/p/w500${m.poster_path}`}
-                                            alt={m.title}
-                                            className="w-full h-full object-cover"
-                                        />
-                                        <div className="absolute inset-0 bg-indigo-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                                    </div>
-                                    <div className="p-2.5">
-                                        <h2 className="text-sm font-medium line-clamp-2 leading-snug mb-1 text-slate-100">{m.title}</h2>
-                                        <p className="text-xs text-indigo-400 font-semibold">★ {m.vote_average?.toFixed(1) || "No rating"}</p>
-                                    </div>
-                                </Link>
+                                    show = {m}
+                                    currentPage={currentPage}
+                                    searchQuery={searchQuery}
+                                    currentSort={currentSort}
+                                    currentGenre={currentGenre}
+                                    type="movies"
+                                />
                             ))}
                         </div>
                     ) : (
