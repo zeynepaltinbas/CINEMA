@@ -25,7 +25,6 @@ export default async function MovieInfo({ params, searchParams }: any) {
             </Link>
 
             <div className="flex flex-col md:flex-row gap-10">
-
                 <div className="shrink-0 mx-auto md:mx-0">
                     <img
                         src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
