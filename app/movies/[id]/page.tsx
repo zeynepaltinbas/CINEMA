@@ -9,6 +9,7 @@ export default async function MovieInfo({ params, searchParams }: any) {
     const searchQuery = searchPar.query || ''
     const genre = searchPar.genre || ''
     const sort = searchPar.sort || ''
+    const tab = searchPar.tab || ''
 
     const res = await fetch(
         `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits,release_dates`
@@ -33,7 +34,7 @@ export default async function MovieInfo({ params, searchParams }: any) {
             )}
 
             <Link
-                href={`/?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}${genre ? `&genre=${genre}` : ''}${sort ? `&sort=${sort}` : ''}`}
+                href={`/movies?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}${genre ? `&genre=${genre}` : ''}${sort ? `&sort=${sort}` : ''}${tab ? `&tab=${tab}` : ''}`}
                 className="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 transition-colors mb-10 text-sm font-medium"
             >
                 ← Go back
