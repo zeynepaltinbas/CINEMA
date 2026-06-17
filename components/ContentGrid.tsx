@@ -19,28 +19,44 @@ interface ContentGridProps {
 }
 
 export default function ContentGrid({ title, placeholder, formAction, items, totalPages, currentPage, searchQuery, currentSort, currentGenre, currentTab = "popular", type = "movies" }: ContentGridProps) {
+    const isSortAvailable = !searchQuery && currentTab === "popular"
     return (
         <main className="min-h-screen px-4 py-6 max-w-7xl mx-auto">
-            <div className="max-w-xl mx-auto mb-3 flex flex-col items-center">
-                <form action={formAction} method="GET" className="flex gap-2 mb-5 w-full">
-                    <input
-                        type="text"
-                        name="query"
-                        placeholder={placeholder}
-                        defaultValue={searchQuery}
-                        className="flex-1 bg-[#1e293b] border border-[#2d3f55] rounded-lg px-4 py-2.5 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-400 transition-colors"
-                    />
-                    {/* hidden field so tab survives a search submit */}
-                    <input type="hidden" name="tab" value={currentTab} />
-                    <button
-                        type="submit"
-                        className="bg-indigo-400 text-[#0f172a] font-semibold px-5 py-2.5 rounded-lg hover:bg-indigo-300 transition-colors cursor-pointer"
-                    >
-                        Search
-                    </button>
-                </form>
-                {!searchQuery && currentTab === "popular" && (
-                    <div className="w-full flex justify-center">
+            {/* search & sort */}
+            <details className="max-w-xl mx-auto mb-3 group" open={false}>
+                <summary className="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
+                    <div className="flex gap-2 mb-5 w-full">
+                        <form action={formAction} method="GET" className="flex gap-2 flex-1">
+                            <input
+                                type="text"
+                                name="query"
+                                placeholder={placeholder}
+                                defaultValue={searchQuery}
+                                className="flex-1 bg-[#1e293b] border border-[#2d3f55] rounded-lg px-4 py-2.5 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-400 transition-colors"
+                            />
+                            {/* hidden field so tab survives a search submit */}
+                            <input type="hidden" name="tab" value={currentTab} />
+                            <button
+                                type="submit"
+                                className="bg-indigo-400 text-[#0f172a] font-semibold px-5 py-2.5 rounded-lg hover:bg-indigo-300 transition-colors cursor-pointer"
+                            >
+                                Search
+                            </button>
+                        </form>
+
+                        {/* filter button */}
+                        <div className={`flex items-center justify-center px-4 border rounded-lg transition-all text-sm font-semibold select-none ${
+                                isSortAvailable 
+                                    ? "bg-[#1e293b] border-[#2d3f55] text-indigo-400 hover:border-indigo-400/60 pointer-events-auto" 
+                                    : "bg-[#1e293b]/40 border-[#2d3f55]/30 text-slate-600 pointer-events-none"
+                            }`}>
+                            Filter
+                        </div>
+                    </div>
+                </summary>
+
+                {isSortAvailable && (
+                    <div className="w-full flex justify-center mb-5 animate-fadeIn">
                         <SortMenu
                             currentFilters={currentSort}
                             currentGenre={currentGenre}
@@ -48,7 +64,7 @@ export default function ContentGrid({ title, placeholder, formAction, items, tot
                         />
                     </div>
                 )}
-            </div>
+            </details>
             
             {type === "movies" ? (
                 <div className="mb-6">
@@ -73,9 +89,17 @@ export default function ContentGrid({ title, placeholder, formAction, items, tot
                     </div>
                 </div>
             ) : (
-                <h2 className="text-0.5xl text-slate-400 mb-1">
-                    Results for "{searchQuery}"
-                </h2>
+                <div className="mb-6">
+                    {searchQuery ? (
+                        <h2 className="text-0.5xl text-slate-400 mb-1">
+                            Results for "{searchQuery}"
+                        </h2>
+                    ) : (
+                        <h1 className="text-2xl font-bold text-slate-100">
+                            {title}
+                        </h1>
+                    )}
+                </div>
             )}
 
             {items.length > 0 ? (

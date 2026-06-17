@@ -5,3 +5,18 @@
     @apply bg-[#0f172a] text-slate-100 antialiased;
   }
 }
+
+/* details[open] > div {
+  animation: easeInOut 0.3s ease-in-out;
+}
+
+@keyframes easeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0);
+  }
+} */
