@@ -11,12 +11,27 @@ export default async function MovieInfo({ params, searchParams }: any) {
     const sort = searchPar.sort || ''
 
     const res = await fetch(
-        `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_API_KEY}`
+        `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits,release_dates`
     )
     const movie = await res.json()
 
+    const topCast = movie.credits?.cast?.slice(0, 5) || []
+    const director = movie.credits?.crew?.find((member: any) => member.job === "Director")
+
     return (
-        <main className="min-h-screen px-4 py-10 max-w-5xl mx-auto">
+        <main className="min-h-screen px-4 py-10 max-w-5xl mx-auto relative text-slate-100">
+            
+            {movie.backdrop_path && (
+                <div className="absolute top-0 left-0 w-full h-[45vh] overflow-hidden -z-10">
+                    <img 
+                        src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`} 
+                        alt="" 
+                        className="w-full h-full object-cover opacity-70 blur-sm"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-b from-transparent via-[#0f172a]/40 to-[#0f172a]"></div>
+                </div>
+            )}
+
             <Link
                 href={`/?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}${genre ? `&genre=${genre}` : ''}${sort ? `&sort=${sort}` : ''}`}
                 className="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 transition-colors mb-10 text-sm font-medium"
@@ -29,14 +44,16 @@ export default async function MovieInfo({ params, searchParams }: any) {
                     <img
                         src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                         alt={movie.title}
-                        className="w-52 md:w-64 rounded-2xl shadow-lg"
+                        className="w-52 md:w-64 rounded-2xl shadow-2xl border border-[#2d3f55]/30"
                     />
                 </div>
 
-                <div className="flex flex-col gap-5 min-w-0">
+                <div className="flex flex-col gap-5 min-w-0 flex-1">
                     <div>
-                        <h1 className="text-3xl font-bold mb-1 text-slate-100">{movie.title}</h1>
-                        <p className="text-slate-400 italic text-sm">{movie.tagline}</p>
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <h1 className="text-3xl font-bold text-slate-100">{movie.title}</h1>
+                        </div>
+                        <p className="text-slate-400 italic text-sm mt-1">{movie.tagline}</p>
                     </div>
 
                     <div className="flex flex-wrap gap-2">
@@ -71,9 +88,28 @@ export default async function MovieInfo({ params, searchParams }: any) {
                         </div>
                     </div>
 
-                    <p className="text-sm text-slate-400">
-                        Original language: <span className="text-slate-100 font-medium uppercase">{movie.original_language}</span>
-                    </p>
+                    <div className="flex flex-col gap-3 border-t border-[#2d3f55]/40 pt-4">
+                        {director && (
+                            <p className="text-sm text-slate-400">
+                                Director: <span className="text-slate-200 font-semibold">{director.name}</span>
+                            </p>
+                        )}
+                        
+                        {topCast.length > 0 && (
+                            <p className="text-sm text-slate-400">
+                                Featuring:{" "}
+                                {topCast.map((actor: any, idx: number) => (
+                                    <span key={actor.id} className="text-slate-200 font-medium">
+                                        {actor.name}{idx < topCast.length - 1 ? ", " : ""}
+                                    </span>
+                                ))}
+                            </p>
+                        )}
+
+                        <p className="text-sm text-slate-400">
+                            Original language: <span className="text-slate-100 font-medium uppercase">{movie.original_language}</span>
+                        </p>
+                    </div>
                 </div>
             </div>
         </main>
