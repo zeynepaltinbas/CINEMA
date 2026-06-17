@@ -10,12 +10,27 @@ export default async function SeriesInfo({ params, searchParams }: any) {
     const sort = searchPar.sort || ''
 
     const res = await fetch(
-        `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${process.env.TMDB_API_KEY}`
+        `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits,release_dates`
     )
     const show = await res.json()
 
+    const topCast = show.credits?.cast?.slice(0, 5) || []
+    const creators = show.created_by || []
+
     return (
         <main className="min-h-screen px-4 py-10 max-w-5xl mx-auto">
+
+            {show.backdrop_path && (
+                <div className="absolute top-0 left-0 w-full h-[45vh] overflow-hidden -z-10">
+                    <img 
+                        src={`https://image.tmdb.org/t/p/original${show.backdrop_path}`} 
+                        alt="" 
+                        className="w-full h-full object-cover opacity-50 blur-sm"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-b from-transparent via-[#0f172a]/40 to-[#0f172a]"></div>
+                </div>
+            )}
+
             <Link
                 href={`/tv?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}${genre ? `&genre=${genre}` : ''}${sort ? `&sort=${sort}` : ''}`}
                 className="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 transition-colors mb-10 text-sm font-medium"
@@ -77,9 +92,33 @@ export default async function SeriesInfo({ params, searchParams }: any) {
                         </div>
                     </div>
 
-                    <p className="text-sm text-slate-400">
-                        Original language: <span className="text-slate-100 font-medium uppercase">{show.original_language}</span>
-                    </p>
+                    <div className="flex flex-col gap-3 border-t border-[#2d3f55]/40 pt-4">
+                        {creators.length > 0 && (
+                            <p className="text-sm text-slate-400">
+                                Creators:{" "}
+                                {creators.map((c: any, idx: number) => (
+                                    <span key={c.id} className="text-slate-200 font-semibold">
+                                        {c.name}{idx < creators.length - 1 ? ", " : ""}
+                                    </span>
+                                ))}
+                            </p>
+                        )}
+                        
+                        {topCast.length > 0 && (
+                            <p className="text-sm text-slate-400">
+                                Featuring:{" "}
+                                {topCast.map((actor: any, idx: number) => (
+                                    <span key={actor.id} className="text-slate-200 font-medium">
+                                        {actor.name}{idx < topCast.length - 1 ? ", " : ""}
+                                    </span>
+                                ))}
+                            </p>
+                        )}
+
+                        <p className="text-sm text-slate-400">
+                            Original language: <span className="text-slate-100 font-medium uppercase">{show.original_language}</span>
+                        </p>
+                    </div>
                 </div>
             </div>
         </main>

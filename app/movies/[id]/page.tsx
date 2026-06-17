@@ -26,7 +26,7 @@ export default async function MovieInfo({ params, searchParams }: any) {
                     <img 
                         src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`} 
                         alt="" 
-                        className="w-full h-full object-cover opacity-70 blur-sm"
+                        className="w-full h-full object-cover opacity-50 blur-sm"
                     />
                     <div className="absolute inset-0 bg-linear-to-b from-transparent via-[#0f172a]/40 to-[#0f172a]"></div>
                 </div>
