@@ -1,4 +1,5 @@
 import ContentGrid from "@/components/ContentGrid";
+import Navbar from "@/components/Navbar";
 
 export default async function TvPage({ searchParams }: any) {
     const params = await searchParams
@@ -18,15 +19,18 @@ export default async function TvPage({ searchParams }: any) {
     const totalPages = data.total_pages || 0
 
     return (
-        <ContentGrid
-            title="Popular TV Series"
-            items={tvSeries}
-            totalPages={totalPages}
-            currentPage={currentPage}
-            searchQuery={searchQuery}
-            currentSort={currentSort}
-            currentGenre={currentGenre}
-            type="tv"
-        />
+        <>
+            <Navbar />
+            <ContentGrid
+                title="Popular TV Series"
+                items={tvSeries}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                searchQuery={searchQuery}
+                currentSort={currentSort}
+                currentGenre={currentGenre}
+                type="tv"
+            />
+        </>
     )
 }
