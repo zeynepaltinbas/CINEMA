@@ -20,8 +20,6 @@ export default async function TvPage({ searchParams }: any) {
     return (
         <ContentGrid
             title="Popular TV Series"
-            placeholder="Search for a TV Show..."
-            formAction="/tv"
             items={tvSeries}
             totalPages={totalPages}
             currentPage={currentPage}

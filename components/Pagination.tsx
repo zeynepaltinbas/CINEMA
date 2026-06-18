@@ -12,7 +12,7 @@ interface PaginationProps {
 }
 
 export default function Pagination({ currentPage, totalPages, searchQuery, itemsLength, currentGenre, currentSort, currentTab = "popular", type = "movies" }: PaginationProps) {
-    // builds the url for a given page number, carrying over all active filters
+    // builds the url for a given page number
     const queryString = (page: number) =>
         `/${type}?page=${page}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}${currentTab !== "popular" ? `&tab=${currentTab}` : ''}`
 
@@ -47,7 +47,7 @@ export default function Pagination({ currentPage, totalPages, searchQuery, items
                 )}
             </div>
 
-            {/* go to page... */}
+            {/* go to page */}
             {itemsLength > 0 && (
                 <form action={`/${type}`} method="GET" className="flex items-center justify-center gap-2 mt-4 text-slate-400 text-sm">
                     {searchQuery && <input type="hidden" name="query" value={searchQuery} />}

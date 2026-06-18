@@ -11,12 +11,13 @@ interface SortMenuProps {
 export default function SortMenu({ currentFilters, currentGenre, type = "movies" }: SortMenuProps) {
     const isMovie = type === "movies"
     return (
-        <form action={`/${type}`} method="GET" className="flex flex-row gap-4 bg-[#1e293b] border border-[#2d3f55] p-3.5 rounded-2xl w-max">            {/* filter by genre */}
-            <div className="w-48 flex flex-col gap-1.5">
+        <form action={`/${type}`} method="GET" className="flex flex-col sm:flex-row gap-3 w-full">            
+            {/* filter by genre */}
+            <div className="w-full sm:w-48 flex flex-col gap-1.5">
                 <label htmlFor="genre-filter" className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Genre
                 </label>
-                <select name="genre" id="genre-filter" value={currentGenre} 
+                <select name="genre" id="genre-filter" value={currentGenre || ""} 
                     // e: the event object
                     // target: the HTML element that triggered the event
                     // form? : if the form cannot be found for some reason, do not crash the website
@@ -68,11 +69,11 @@ export default function SortMenu({ currentFilters, currentGenre, type = "movies"
             </div>
 
             {/* sort by */}
-            <div className="w-55 flex flex-col gap-1.5">
+            <div className="w-full sm:w-55 flex flex-col gap-1.5">
                 <label htmlFor="sort-by" className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Sort By
                 </label>
-                <select name="sort" id="sort-by" value={currentFilters}
+                <select name="sort" id="sort-by" value={currentFilters || ""}
                     onChange={(e) => e.target.form?.submit()}
                     className="w-full bg-[#0f172a] border border-[#2d3f55] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-400 cursor-pointer"
                 >

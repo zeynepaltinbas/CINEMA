@@ -1,4 +1,5 @@
 import ContentGrid from "@/components/ContentGrid";
+import NowPlayingStrip from "@/components/NowPlaying";
 
 export default async function MoviesPage({ searchParams }: any) {
     const params = await searchParams
@@ -6,41 +7,64 @@ export default async function MoviesPage({ searchParams }: any) {
     const searchQuery = params.query || ""
     const currentSort = params.sort || "popularity.desc"
     const currentGenre = params.genre || ""
-    const currentTab = params.tab || "popular"
 
-    const endpoint = currentTab === "now_playing"
-        ? `https://api.themoviedb.org/3/movie/now_playing?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&region=TR`
-        : searchQuery
-            ? `https://api.themoviedb.org/3/search/movie?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&query=${encodeURIComponent(searchQuery)}&region=TR`
-            : `https://api.themoviedb.org/3/discover/movie?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&sort_by=${currentSort}${currentGenre ? `&with_genres=${currentGenre}` : ""}`
+    const endpoint = searchQuery
+        ? `https://api.themoviedb.org/3/search/movie?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&query=${encodeURIComponent(searchQuery)}&region=TR`
+        : `https://api.themoviedb.org/3/discover/movie?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&sort_by=${currentSort}${currentGenre ? `&with_genres=${currentGenre}` : ""}`
 
-    const res = await fetch(endpoint)
+    const nowPlayingEndpoint = `https://api.themoviedb.org/3/movie/now_playing?api_key=${process.env.TMDB_API_KEY}&region=TR`
+
+    const [res, nowPlayingRes] = await Promise.all([
+        fetch(endpoint),
+        fetch(nowPlayingEndpoint),
+    ])
     const data = await res.json()
-    // tmdb movie array: results
-    let movies = data.results || []
-    let totalPages = data.total_pages || 0
+    const nowPlayingData = await nowPlayingRes.json()
 
-    if (currentTab === "now_playing" && searchQuery) {
-        movies = movies.filter((movie: any) => 
-            movie.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            movie.original_title?.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        totalPages = 1
+    // tmdb movie array: results
+    const movies = data.results || []
+    const totalPages = data.total_pages || 0
+
+    let nowPlaying = nowPlayingData.results || []
+    const npPageCount = nowPlayingData.total_pages || 1
+
+    if (npPageCount > 1) {
+        const pagePromises = []
+
+        for (let p = 2; p <= npPageCount; p++) {
+            pagePromises.push(
+                fetch(`${nowPlayingEndpoint}&page=${p}`)
+                    .then(result => result.json())
+            )
+        }
+
+        const additionalData = await Promise.all(pagePromises)
+        additionalData.forEach(page => {
+            if (page.results) {
+                nowPlaying = [...nowPlaying, ...page.results]
+            }
+        })
     }
 
     return (
-        <ContentGrid
-            title="Popular Movies"
-            placeholder="Search for a Movie..."
-            formAction="/movies"
-            items={movies}
-            totalPages={totalPages}
-            currentPage={currentPage}
-            searchQuery={searchQuery}
-            currentSort={currentSort}
-            currentGenre={currentGenre}
-            currentTab={currentTab}
-            type="movies"
-        />
+        <>
+            {/* hide the strip while searching */}
+            {!searchQuery && (
+                <div className="max-w-7xl mx-auto px-4 pt-6">
+                    <NowPlayingStrip movies={nowPlaying} />
+                </div>
+            )}
+
+            <ContentGrid
+                title="Popular Movies"
+                items={movies}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                searchQuery={searchQuery}
+                currentSort={currentSort}
+                currentGenre={currentGenre}
+                type="movies"
+            />
+        </>
     )
 }

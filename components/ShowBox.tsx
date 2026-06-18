@@ -6,16 +6,15 @@ interface ShowProps {
     searchQuery: string;
     currentSort: string;
     currentGenre: string;
-    currentTab?: string;
     type?: "movies" | "tv";
 }
 
-export default function ShowBox({ show, currentPage, searchQuery, currentSort, currentGenre, currentTab = "popular", type = "movies" }:ShowProps) {
+export default function ShowBox({ show, currentPage, searchQuery, currentSort, currentGenre, type = "movies" }:ShowProps) {
     // bc in movies --> title, tv series --> name
     const title = show.title || show.name || "Untitled"
     return (
         <Link
-            href={`/${type}/${show.id}?from=${currentPage}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}${currentTab !== "popular" ? `&tab=${currentTab}` : ""}`}
+            href={`/${type}/${show.id}?from=${currentPage}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}`}
             className="group bg-[#1e293b] border border-[#2d3f55] rounded-xl overflow-hidden hover:scale-[1.03] hover:border-indigo-400/50 transition-all duration-200"
         >
             <div className="relative aspect-2/3">
