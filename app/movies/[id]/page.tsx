@@ -20,7 +20,7 @@ export default async function MovieInfo({ params, searchParams }: any) {
     const director = movie.credits?.crew?.find((member: any) => member.job === "Director")
 
     return (
-        <main className="min-h-screen px-4 py-10 max-w-5xl mx-auto relative text-slate-100">
+        <main className="min-h-screen px-4 py-10 max-w-5xl mx-auto text-slate-100">
             
             {movie.backdrop_path && (
                 <div className="absolute top-0 left-0 w-full h-[45vh] overflow-hidden -z-10">
