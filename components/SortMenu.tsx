@@ -11,9 +11,9 @@ interface SortMenuProps {
 export default function SortMenu({ currentFilters, currentGenre, type = "movies" }: SortMenuProps) {
     const isMovie = type === "movies"
     return (
-        <form action={`/${type}`} method="GET" className="flex flex-col sm:flex-row gap-3 w-full">            
+        <form action={`/${type}`} method="GET" className="flex flex-col md:flex-row gap-3 w-full">            
             {/* filter by genre */}
-            <div className="w-full sm:w-48 flex flex-col gap-1.5">
+            <div className="w-full md:w-48 flex flex-col gap-1.5">
                 <label htmlFor="genre-filter" className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Genre
                 </label>
@@ -69,7 +69,7 @@ export default function SortMenu({ currentFilters, currentGenre, type = "movies"
             </div>
 
             {/* sort by */}
-            <div className="w-full sm:w-55 flex flex-col gap-1.5">
+            <div className="w-full md:w-55 flex flex-col gap-1.5">
                 <label htmlFor="sort-by" className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Sort By
                 </label>
