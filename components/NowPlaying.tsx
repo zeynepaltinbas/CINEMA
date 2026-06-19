@@ -37,7 +37,6 @@ export default function NowPlayingStrip({ movies }: NowPlayingStripProps) {
 
     return (
         <section className="mb-5 border-b border-[#2d3f55] pb-6">
-            {/* değişiklik: input ve başlığı mobilde de alt alta sıkışmasın diye flex-wrap ve justify-between yaptık */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2 relative">
                     <h2 className="text-lg sm:text-xl font-bold text-slate-100">

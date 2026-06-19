@@ -100,8 +100,9 @@ export default function Navbar() {
                     </div>
 
                     <button onClick={() => setIsAuthOpen(true)}
-                        className="hidden md:block bg-[#1e293b] border border-[#2d3f55] hover:bg-[#2d3f55] text-slate-100 font-medium px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-colors shrink-0 cursor-pointer"
+                        className="hidden md:flex items-center gap-2 bg-[#1e293b] border border-[#2d3f55] hover:bg-[#2d3f55] text-slate-100 font-medium px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-colors shrink-0 cursor-pointer"
                     >
+                        <img src="/login.png" alt="Sign In" className="w-4 h-4 invert opacity-80" />
                         Sign In
                     </button>
 
@@ -110,7 +111,7 @@ export default function Navbar() {
                         onClick={() => setIsMobileMenuOpen(true)}
                         className="block md:hidden bg-[#1e293b] border border-[#2d3f55] text-slate-300 hover:text-slate-100 text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer transition-colors"
                     >
-                        Menu
+                        <img src="/nav.png" alt="Menu" className="w-5 h-5 invert opacity-90" />
                     </button>
                 </div>
             </header>
@@ -189,8 +190,9 @@ export default function Navbar() {
                     <div className="mt-auto">
                         <button 
                             onClick={() => { setIsMobileMenuOpen(false); setIsAuthOpen(true); }}
-                            className="w-full bg-[#1e293b] border border-[#2d3f55] text-slate-100 font-medium py-2 rounded-lg text-xs text-center cursor-pointer"
+                            className="w-full flex items-center justify-center gap-2 bg-[#1e293b] border border-[#2d3f55] text-slate-100 font-medium py-2 rounded-lg text-xs cursor-pointer hover:bg-[#2d3f55] transition-colors"
                         >
+                            <img src="/login.png" alt="Sign In" className="w-4 h-4 invert opacity-80" />
                             Sign In
                         </button>
                     </div>
