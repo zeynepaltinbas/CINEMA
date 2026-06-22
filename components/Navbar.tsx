@@ -1,14 +1,69 @@
 "use client"
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import SortMenu from "./SortMenu";
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
+import { useAuth } from "./AuthProvider";
+import { useNotification } from "./NotificationProvider";
+
+interface AccountActionProps {
+    isSignedIn: boolean;
+    isLoading: boolean;
+    mobile?: boolean;
+    onSignIn: () => void;
+    onSignOut: () => Promise<void>;
+    onNavigate?: () => void
+}
+
+function AccountActions({ isSignedIn, isLoading, mobile = false, onSignIn, onSignOut, onNavigate }: AccountActionProps) {
+    const containerClass = mobile
+        ? "mt-auto flex flex-col gap-3"
+        : "hidden md:flex items-center gap-2 shrink-0"
+    
+    const linkClass = mobile
+        ? "text-sm font-semibold text-slate-300 hover:text-indigo-400 transition-colors"
+        : "text-xs sm:text-sm font-medium text-slate-300 hover:text-indigo-400 transition-colors whitespace-nowrap"
+    
+    const buttonClass = mobile
+        ? "w-full flex items-center justify-center gap-2 bg-[#1e293b] border border-[#2d3f55] text-slate-100 font-medium py-2 rounded-lg text-xs cursor-pointer hover:bg-[#2d3f55] transition-colors"
+        : "flex items-center gap-2 bg-[#1e293b] border border-[#2d3f55] hover:bg-[#2d3f55] text-slate-100 font-medium px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-colors cursor-pointer"
+
+    if (isLoading) {
+        return <div className={containerClass}></div>
+    }
+
+    return (
+        <div className={containerClass}>
+            {isSignedIn ? (
+                <>
+                    <Link href="/favourites" onClick={onNavigate} className={linkClass}>
+                        Favourites
+                    </Link>
+                    <Link href="/watchlist" onClick={onNavigate} className={linkClass}>
+                        Watchlist
+                    </Link>
+                    <button type="button" onClick={onSignOut} className={buttonClass}>
+                        Sign Out
+                    </button>
+                </>
+            ) : (
+                <button type="button" onClick={onSignIn} className={buttonClass}>
+                    <img src="/login.png" className="w-4 h-4 invert opacity-80" />
+                    Sign In
+                </button>
+            )}
+        </div>
+    )
+}
 
 export default function Navbar() {
     const pathname = usePathname() // returns "/movies", "/tv" or "/"
+    const router = useRouter()
     const searchParams = useSearchParams()
+    const { user, isAuthLoading, signOut } = useAuth()
+    const { showNotification } = useNotification()
 
     const searchQuery = searchParams.get("query") || ""
     const currentSort = searchParams.get("sort") || "popularity.desc"
@@ -25,6 +80,50 @@ export default function Navbar() {
     const [isAuthOpen, setIsAuthOpen] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isSignUpOpen, setIsSignUpOpen] = useState(false)
+
+    function handleSignInSuccess(name: string) {
+        setIsAuthOpen(false)
+        setIsSignUpOpen(false)
+        showNotification(`Login successful. Welcome, ${name}!`)
+
+        if (pathname !== "/movies") {
+            sessionStorage.setItem("auth_notification", `Login successful. Welcome, ${name}!`)
+        }
+
+        // redirect user to /movies page and refresh
+        router.push("/movies")
+        router.refresh()
+    }
+
+    function handleSignUpSuccess() {
+        setIsSignUpOpen(false)
+        showNotification(
+            "Account created successfully. Check your email for confirmation.",
+            { label: "Log in?", onClick: () => setIsAuthOpen(true) }
+        )
+    }
+
+    async function handleSignOut() {
+        try {
+            await signOut()
+            setIsMobileMenuOpen(false)
+            showNotification("Signed out successfully.")
+
+            router.push("/movies")
+            router.refresh()
+        } catch (error) {
+            showNotification(error instanceof Error ? error.message : "Could not sign out. Please try again.")
+        }
+    }
+
+    useEffect(() => {
+        const savedNotification = sessionStorage.getItem("auth_notification")
+
+        if (savedNotification) {
+            showNotification(savedNotification)
+            sessionStorage.removeItem("auth_notification")
+        }
+    }, [showNotification])
 
     return (
         <>
@@ -99,12 +198,13 @@ export default function Navbar() {
                         </div>
                     </div>
 
-                    <button onClick={() => setIsAuthOpen(true)}
-                        className="hidden md:flex items-center gap-2 bg-[#1e293b] border border-[#2d3f55] hover:bg-[#2d3f55] text-slate-100 font-medium px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-colors shrink-0 cursor-pointer"
-                    >
-                        <img src="/login.png" alt="Sign In" className="w-4 h-4 invert opacity-80" />
-                        Sign In
-                    </button>
+                    {/* shows sign in or sign out button depending on auth */}
+                    <AccountActions 
+                        isSignedIn={Boolean(user)}
+                        isLoading={isAuthLoading}
+                        onSignIn={() => setIsAuthOpen(true)}
+                        onSignOut={handleSignOut}
+                    />
 
                     {/* menu for mobile */}
                     <button 
@@ -186,16 +286,15 @@ export default function Navbar() {
                         </div>
                     </div>
 
-                    {/* mobile sign in button */}
-                    <div className="mt-auto">
-                        <button 
-                            onClick={() => { setIsMobileMenuOpen(false); setIsAuthOpen(true); }}
-                            className="w-full flex items-center justify-center gap-2 bg-[#1e293b] border border-[#2d3f55] text-slate-100 font-medium py-2 rounded-lg text-xs cursor-pointer hover:bg-[#2d3f55] transition-colors"
-                        >
-                            <img src="/login.png" alt="Sign In" className="w-4 h-4 invert opacity-80" />
-                            Sign In
-                        </button>
-                    </div>
+                    {/* mobile account actions */}
+                    <AccountActions
+                        isSignedIn={Boolean(user)} 
+                        isLoading={isAuthLoading}
+                        mobile
+                        onSignIn={() => { setIsMobileMenuOpen(false); setIsAuthOpen(true); }}
+                        onSignOut={handleSignOut}
+                        onNavigate={() => setIsMobileMenuOpen(false)}
+                    />
                 </div>
             </div>
 
@@ -203,12 +302,14 @@ export default function Navbar() {
                 isOpen={isAuthOpen}
                 onClose={() => setIsAuthOpen(false)}
                 onSwitchToSignUp={() => setIsSignUpOpen(true)}
+                onSuccess={handleSignInSuccess}
             />
 
             <SignUp 
                 isOpen={isSignUpOpen}
                 onClose={() => setIsSignUpOpen(false)}
                 onSwitchToSignIn={() => setIsAuthOpen(true)}
+                onSuccess={handleSignUpSuccess}
             />
         </>
     )

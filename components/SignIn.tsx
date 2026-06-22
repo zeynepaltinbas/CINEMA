@@ -1,12 +1,48 @@
 "use client"
 
+import { supabase } from "@/lib/supabase";
+import { useState } from "react";
+import type { SubmitEvent } from "react";
+
 interface SignInProps {
     isOpen: boolean;
     onClose: () => void;
     onSwitchToSignUp: () => void;
+    onSuccess: (name: string) => void;
 }
 
-export default function SignIn({ isOpen, onClose, onSwitchToSignUp }: SignInProps) {
+export default function SignIn({ isOpen, onClose, onSwitchToSignUp, onSuccess }: SignInProps) {
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
+    const [error, setError] = useState("")
+    const [isLoading, setIsLoading] = useState(false)
+
+    async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+        e.preventDefault()
+        setError("")
+        setIsLoading(true)
+
+        const { data, error: signInError} = await supabase.auth.signInWithPassword({
+            email,
+            password
+        })
+        setIsLoading(false)
+
+        if (signInError) {
+            setError(signInError.message)
+            return
+        }
+
+        const name = data.user.user_metadata.first_name
+            || data.user.user_metadata.full_name
+            || data.user.email?.split("@")[0]
+            || "there"
+        
+        setEmail("")
+        setPassword("")
+        onSuccess(name)
+    }
+    
     if (!isOpen) 
         return null;
 
@@ -26,7 +62,7 @@ export default function SignIn({ isOpen, onClose, onSwitchToSignUp }: SignInProp
                     Sign in
                 </h2>
 
-                <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-xs font-semibold text-slate-400 mb-1.5">
                             Email
@@ -34,6 +70,9 @@ export default function SignIn({ isOpen, onClose, onSwitchToSignUp }: SignInProp
                         <input
                             type="email"
                             placeholder="example@mail.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
                             className="w-full bg-[#0f172a] border border-[#2d3f55] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 transition-colors"
                         />
                     </div>
@@ -45,16 +84,26 @@ export default function SignIn({ isOpen, onClose, onSwitchToSignUp }: SignInProp
                         <input
                             type="password"
                             placeholder="********"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
                             className="w-full bg-[#0f172a] border border-[#2d3f55] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 transition-colors"
                         />
                     </div>
 
+                    {error && (
+                        <p role="alert" className="text-xs text-red-400">
+                            {error}
+                        </p>
+                    )}
+
                     <div className="pt-4 space-y-2">
                         <button
                             type="submit"
+                            disabled={isLoading}
                             className="w-full bg-[#d11c7f] hover:bg-[#b01368] active:scale-[0.99] text-white text-xs sm:text-sm font-bold py-3 rounded-xl transition-all cursor-pointer shadow-lg shadow-[#d11c7f]/10"
                         >
-                            Sign in
+                            {isLoading ? "Signing in..." : "Sign in"}
                         </button>
 
                         <button
