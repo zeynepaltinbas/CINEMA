@@ -1,6 +1,5 @@
 // Next.js will pass params.id into this file
 import Link from "next/link"
-import Navbar from "@/components/Navbar"
 
 export default async function MovieInfo({ params, searchParams }: any) {
     const params2 = await params
@@ -11,6 +10,9 @@ export default async function MovieInfo({ params, searchParams }: any) {
     const genre = searchPar.genre || ''
     const sort = searchPar.sort || ''
     const tab = searchPar.tab || ''
+    const returnTo = searchPar.returnTo === '/favourites' || searchPar.returnTo === '/watchlist'
+        ? searchPar.returnTo
+        : ''
 
     const res = await fetch(
         `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits,release_dates`
@@ -22,7 +24,6 @@ export default async function MovieInfo({ params, searchParams }: any) {
 
     return (
         <>
-           <Navbar />
             <main className="min-h-screen px-4 py-10 max-w-5xl mx-auto text-slate-100">
                 {movie.backdrop_path && (
                     <div className="absolute top-0 left-0 w-full h-[45vh] overflow-hidden -z-10">
@@ -36,7 +37,7 @@ export default async function MovieInfo({ params, searchParams }: any) {
                 )}
 
                 <Link
-                    href={`/movies?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}${genre ? `&genre=${genre}` : ''}${sort ? `&sort=${sort}` : ''}${tab ? `&tab=${tab}` : ''}`}
+                    href={returnTo || `/movies?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}${genre ? `&genre=${genre}` : ''}${sort ? `&sort=${sort}` : ''}${tab ? `&tab=${tab}` : ''}`}
                     className="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 transition-colors mb-10 text-sm font-medium"
                 >
                     ← Go back

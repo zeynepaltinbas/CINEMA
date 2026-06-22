@@ -8,14 +8,15 @@ interface ShowProps {
     currentSort: string;
     currentGenre: string;
     type?: "movies" | "tv";
+    returnTo?: "/favourites" | "/watchlist";
 }
 
-export default function ShowBox({ show, currentPage, searchQuery, currentSort, currentGenre, type = "movies" }:ShowProps) {
+export default function ShowBox({ show, currentPage, searchQuery, currentSort, currentGenre, type = "movies", returnTo }:ShowProps) {
     // bc in movies --> title, tv series --> name
     const title = show.title || show.name || "Untitled"
     return (
         <article className="group bg-[#1e293b] border border-[#2d3f55] rounded-xl overflow-hidden hover:scale-[1.03] hover:border-indigo-400/50 transition-all duration-200">
-            <Link href={`/${type}/${show.id}?from=${currentPage}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}`}>
+            <Link href={`/${type}/${show.id}?from=${currentPage}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`}>
                 <div className="relative aspect-2/3">
                     <img
                         src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}

@@ -31,16 +31,16 @@ export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) 
         })
     }
 
-    const favouriteIsSaved = isSaved(show.id, mediaType, "favourite")
+    const favouriteIsSaved = isSaved(show.id, mediaType, "favourites")
     const watchlistIsSaved = isSaved(show.id, mediaType, "watchlist")
-    const favouriteIsPending = isPending(show.id, mediaType, "favourite")
+    const favouriteIsPending = isPending(show.id, mediaType, "favourites")
     const watchlistIsPending = isPending(show.id, mediaType, "watchlist")
 
     return (
         <div className="flex items-center gap-1.5">
             <button
                 type="button"
-                onClick={() => handleToggle("favourite")}
+                onClick={() => handleToggle("favourites")}
                 disabled={favouriteIsPending}
                 aria-label={favouriteIsSaved ? "Remove from favourites" : "Add to favourites"}
                 aria-pressed={favouriteIsSaved}

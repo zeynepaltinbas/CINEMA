@@ -1,6 +1,5 @@
 import ContentGrid from "@/components/ContentGrid";
 import NowPlayingStrip from "@/components/NowPlaying";
-import Navbar from "@/components/Navbar";
 
 export default async function MoviesPage({ searchParams }: any) {
     const params = await searchParams
@@ -49,7 +48,6 @@ export default async function MoviesPage({ searchParams }: any) {
 
     return (
         <>
-            <Navbar />
             {/* hide the strip while searching */}
             {!searchQuery && (
                 <div className="max-w-7xl mx-auto px-4 pt-6">

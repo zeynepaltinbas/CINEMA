@@ -7,13 +7,15 @@ import { useAuth } from "./AuthProvider"
 import { useNotification } from "./NotificationProvider"
 
 export type MediaType = "movie" | "tv"
-export type ListType = "favourite" | "watchlist"
+export type ListType = "favourites" | "watchlist"
 
-interface SavedItem {
+export interface SavedItem {
     id: number;
     media_id: number;
     media_type: MediaType;
     list_type: ListType;
+    item: Record<string, unknown>;
+    created_at: string;
 }
 
 interface ToggleSavedItem {
@@ -24,8 +26,10 @@ interface ToggleSavedItem {
 }
 
 interface SavedItemsContextValue {
+    isSavedItemsLoading: boolean;
     isSaved: (mediaId: number, mediaType: MediaType, listType: ListType) => boolean;
     isPending: (mediaId: number, mediaType: MediaType, listType: ListType) => boolean;
+    getSavedItems: (listType: ListType) => SavedItem[];
     toggleSavedItem: (savedItem: ToggleSavedItem) => Promise<void>;
 }
 
@@ -40,27 +44,33 @@ export function SavedItemsProvider({ children }: { children: ReactNode }) {
     const { showNotification } = useNotification()
     const [savedItems, setSavedItems] = useState<SavedItem[]>([])
     const [pendingKeys, setPendingKeys] = useState<string[]>([])
+    const [isSavedItemsLoading, setIsSavedItemsLoading] = useState(false)
 
     useEffect(() => {
         let isMounted = true
         setSavedItems([])
 
         if (!user) {
+            setIsSavedItemsLoading(false)
             return
         }
 
+        setIsSavedItemsLoading(true)
+
         supabase
             .from("saved_items")
-            .select("id, media_id, media_type, list_type")
+            .select("id, media_id, media_type, list_type, item, created_at")
             .then(({ data, error }) => {
                 if (!isMounted) return
 
                 if (error) {
                     showNotification(error.message)
+                    setIsSavedItemsLoading(false)
                     return
                 }
 
                 setSavedItems((data ?? []) as SavedItem[])
+                setIsSavedItemsLoading(false)
             })
 
         return () => {
@@ -79,6 +89,12 @@ export function SavedItemsProvider({ children }: { children: ReactNode }) {
     const isPending = useCallback((mediaId: number, mediaType: MediaType, listType: ListType) => {
         return pendingKeys.includes(createSavedItemKey(mediaId, mediaType, listType))
     }, [pendingKeys])
+
+    const getSavedItems = useCallback((listType: ListType) => {
+        return savedItems
+            .filter((savedItem) => savedItem.list_type === listType)
+            .sort((firstItem, secondItem) => secondItem.created_at.localeCompare(firstItem.created_at))
+    }, [savedItems])
 
     const toggleSavedItem = useCallback(async ({ mediaId, mediaType, listType, item }: ToggleSavedItem) => {
         if (!user) {
@@ -118,7 +134,7 @@ export function SavedItemsProvider({ children }: { children: ReactNode }) {
                     list_type: listType,
                     item,
                 })
-                .select("id, media_id, media_type, list_type")
+                .select("id, media_id, media_type, list_type, item, created_at")
                 .single()
 
             if (error) {
@@ -133,7 +149,7 @@ export function SavedItemsProvider({ children }: { children: ReactNode }) {
     }, [pendingKeys, savedItems, showNotification, user])
 
     return (
-        <SavedItemsContext.Provider value={{ isSaved, isPending, toggleSavedItem }}>
+        <SavedItemsContext.Provider value={{ isSavedItemsLoading, isSaved, isPending, getSavedItems, toggleSavedItem }}>
             {children}
         </SavedItemsContext.Provider>
     )

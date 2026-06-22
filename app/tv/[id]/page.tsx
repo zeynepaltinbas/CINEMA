@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Navbar from "@/components/Navbar";
 
 export default async function SeriesInfo({ params, searchParams }: any) {
     const params2 = await params
@@ -9,6 +8,9 @@ export default async function SeriesInfo({ params, searchParams }: any) {
     const searchQuery = searchPar.query || ''
     const genre = searchPar.genre || ''
     const sort = searchPar.sort || ''
+    const returnTo = searchPar.returnTo === '/favourites' || searchPar.returnTo === '/watchlist'
+        ? searchPar.returnTo
+        : ''
 
     const res = await fetch(
         `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits,release_dates`
@@ -20,7 +22,6 @@ export default async function SeriesInfo({ params, searchParams }: any) {
 
     return (
         <>
-            <Navbar />
             <main className="min-h-screen px-4 py-10 max-w-5xl mx-auto">
                 {show.backdrop_path && (
                     <div className="absolute top-0 left-0 w-full h-[45vh] overflow-hidden -z-10">
@@ -34,7 +35,7 @@ export default async function SeriesInfo({ params, searchParams }: any) {
                 )}
 
                 <Link
-                    href={`/tv?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}${genre ? `&genre=${genre}` : ''}${sort ? `&sort=${sort}` : ''}`}
+                    href={returnTo || `/tv?page=${returnPage}${searchQuery ? `&query=${searchQuery}` : ''}${genre ? `&genre=${genre}` : ''}${sort ? `&sort=${sort}` : ''}`}
                     className="inline-flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 transition-colors mb-10 text-sm font-medium"
                 >
                     ← Go back

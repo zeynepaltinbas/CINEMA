@@ -1,37 +1,37 @@
 "use client"
 import Link from "next/link";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import SortMenu from "./SortMenu";
 import SignIn from "./SignIn";
 import SignUp from "./SignUp";
 import { useAuth } from "./AuthProvider";
 import { useNotification } from "./NotificationProvider";
 
-interface AccountActionProps {
+interface AccountActionsProps {
     isSignedIn: boolean;
     isLoading: boolean;
     mobile?: boolean;
     onSignIn: () => void;
     onSignOut: () => Promise<void>;
-    onNavigate?: () => void
+    onNavigate?: () => void;
 }
 
-function AccountActions({ isSignedIn, isLoading, mobile = false, onSignIn, onSignOut, onNavigate }: AccountActionProps) {
+function AccountActions({ isSignedIn, isLoading, mobile = false, onSignIn, onSignOut, onNavigate }: AccountActionsProps) {
     const containerClass = mobile
         ? "mt-auto flex flex-col gap-3"
         : "hidden md:flex items-center gap-2 shrink-0"
-    
+
     const linkClass = mobile
         ? "text-sm font-semibold text-slate-300 hover:text-indigo-400 transition-colors"
         : "text-xs sm:text-sm font-medium text-slate-300 hover:text-indigo-400 transition-colors whitespace-nowrap"
-    
+
     const buttonClass = mobile
         ? "w-full flex items-center justify-center gap-2 bg-[#1e293b] border border-[#2d3f55] text-slate-100 font-medium py-2 rounded-lg text-xs cursor-pointer hover:bg-[#2d3f55] transition-colors"
         : "flex items-center gap-2 bg-[#1e293b] border border-[#2d3f55] hover:bg-[#2d3f55] text-slate-100 font-medium px-3 py-1.5 rounded-lg text-xs sm:text-sm transition-colors cursor-pointer"
 
     if (isLoading) {
-        return <div className={containerClass}></div>
+        return <div className={containerClass} />
     }
 
     return (
@@ -50,7 +50,7 @@ function AccountActions({ isSignedIn, isLoading, mobile = false, onSignIn, onSig
                 </>
             ) : (
                 <button type="button" onClick={onSignIn} className={buttonClass}>
-                    <img src="/login.png" className="w-4 h-4 invert opacity-80" />
+                    <img src="/login.png" alt="" className="w-4 h-4 invert opacity-80" />
                     Sign In
                 </button>
             )}
@@ -80,6 +80,28 @@ export default function Navbar() {
     const [isAuthOpen, setIsAuthOpen] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isSignUpOpen, setIsSignUpOpen] = useState(false)
+    const [isClient, setIsClient] = useState(false)
+
+    useEffect(() => {
+        setIsClient(true)
+    }, [])
+
+    useEffect(() => {
+        const savedNotification = sessionStorage.getItem("auth_notification")
+
+        if (savedNotification) {
+            showNotification(savedNotification)
+            sessionStorage.removeItem("auth_notification")
+        }
+    }, [showNotification])
+
+    function handleSignUpSuccess() {
+        setIsSignUpOpen(false)
+        showNotification(
+            "Account created successfully. Check your email for confirmation.",
+            { label: "Log in?", onClick: () => setIsAuthOpen(true) }
+        )
+    }
 
     function handleSignInSuccess(name: string) {
         setIsAuthOpen(false)
@@ -90,17 +112,8 @@ export default function Navbar() {
             sessionStorage.setItem("auth_notification", `Login successful. Welcome, ${name}!`)
         }
 
-        // redirect user to /movies page and refresh
         router.push("/movies")
         router.refresh()
-    }
-
-    function handleSignUpSuccess() {
-        setIsSignUpOpen(false)
-        showNotification(
-            "Account created successfully. Check your email for confirmation.",
-            { label: "Log in?", onClick: () => setIsAuthOpen(true) }
-        )
     }
 
     async function handleSignOut() {
@@ -108,22 +121,12 @@ export default function Navbar() {
             await signOut()
             setIsMobileMenuOpen(false)
             showNotification("Signed out successfully.")
-
             router.push("/movies")
             router.refresh()
         } catch (error) {
             showNotification(error instanceof Error ? error.message : "Could not sign out. Please try again.")
         }
     }
-
-    useEffect(() => {
-        const savedNotification = sessionStorage.getItem("auth_notification")
-
-        if (savedNotification) {
-            showNotification(savedNotification)
-            sessionStorage.removeItem("auth_notification")
-        }
-    }, [showNotification])
 
     return (
         <>
@@ -198,10 +201,9 @@ export default function Navbar() {
                         </div>
                     </div>
 
-                    {/* shows sign in or sign out button depending on auth */}
-                    <AccountActions 
-                        isSignedIn={Boolean(user)}
-                        isLoading={isAuthLoading}
+                    <AccountActions
+                        isSignedIn={isClient && Boolean(user)}
+                        isLoading={!isClient || isAuthLoading}
                         onSignIn={() => setIsAuthOpen(true)}
                         onSignOut={handleSignOut}
                     />
@@ -288,8 +290,8 @@ export default function Navbar() {
 
                     {/* mobile account actions */}
                     <AccountActions
-                        isSignedIn={Boolean(user)} 
-                        isLoading={isAuthLoading}
+                        isSignedIn={isClient && Boolean(user)}
+                        isLoading={!isClient || isAuthLoading}
                         mobile
                         onSignIn={() => { setIsMobileMenuOpen(false); setIsAuthOpen(true); }}
                         onSignOut={handleSignOut}
