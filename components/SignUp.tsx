@@ -1,7 +1,6 @@
 "use client"
 
 import { supabase } from "@/lib/supabase";
-import { setegid } from "process";
 import { SubmitEvent, useState } from "react";
 
 interface SignUpProps {
@@ -96,7 +95,6 @@ export default function SignUp({ isOpen, onClose, onSwitchToSignIn, onSuccess }:
                                 placeholder="Doe"
                                 value={surname}
                                 onChange={(e) => setSurname(e.target.value)}
-                                required
                                 className="w-full bg-[#0f172a] border border-[#2d3f55] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 transition-colors"
                             />
                         </div>

@@ -1,11 +1,12 @@
 "use client"
 
 import { supabase } from "@/lib/supabase"
+// context --> allows to share data across the entire component tree without explicitly
+// passing props through every level (eliminates prop drilling)
 import { createContext, useContext, useEffect, useState } from "react"
 import type { ReactNode } from "react"
 // ReactNode tells ts what may be passed as children (such as components, text, elements)
 import type { User } from "@supabase/supabase-js"
-import { setuid } from "process"
 // User describes what a supabase user should look like (for typescript checks)
 // import type --> needed only for typechecking, not incuded in runtime javascript
 

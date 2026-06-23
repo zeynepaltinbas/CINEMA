@@ -17,7 +17,7 @@ export default function Pagination({ currentPage, totalPages, searchQuery, items
         `/${type}?page=${page}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}${currentTab !== "popular" ? `&tab=${currentTab}` : ''}`
 
     return (
-        <div className="flex flex-col items-center justify-center w-full">
+        <div className="flex flex-col items-center justify-center w-full pb-5">
             {/* pagination */}
             <div className="flex items-center justify-center gap-4 mt-12">
                 {currentPage > 1 ? (

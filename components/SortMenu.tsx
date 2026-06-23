@@ -8,8 +8,52 @@ interface SortMenuProps {
     type: "movies" | "tv"
 }
 
+export const movieGenres = [
+    { value: "28", label: "Action" },
+    { value: "35", label: "Comedy" },
+    { value: "80", label: "Crime" },
+    { value: "9648", label: "Mystery" },
+    { value: "18", label: "Drama" },
+    { value: "10749", label: "Romance" },
+    { value: "12", label: "Adventure" },
+    { value: "27", label: "Horror" },
+    { value: "53", label: "Thriller" },
+    { value: "878", label: "Sci-Fi" },
+    { value: "14", label: "Fantasy" },
+    { value: "10402", label: "Music" },
+    { value: "36", label: "History" },
+    { value: "99", label: "Documentary" },
+    { value: "10751", label: "Family" },
+    { value: "16", label: "Animation" },
+]
+
+export const tvGenres = [
+    { value: "10759", label: "Action & Adventure" },
+    { value: "35", label: "Comedy" },
+    { value: "80", label: "Crime" },
+    { value: "9648", label: "Mystery" },
+    { value: "18", label: "Drama" },
+    { value: "36", label: "History" },
+    { value: "99", label: "Documentary" },
+    { value: "10751", label: "Family" },
+    { value: "16", label: "Animation" },
+    { value: "10765", label: "Sci-Fi & Fantasy" },
+    { value: "10766", label: "Soap" },
+    { value: "10767", label: "Talk" },
+    { value: "10764", label: "Reality" },
+    { value: "10768", label: "War & Politics" },
+    { value: "10763", label: "News" },
+    { value: "10762", label: "Kids" },
+]
+
+export const profileGenres = Array.from(
+    new Set([...movieGenres, ...tvGenres].map((genre) => genre.label))
+)
+
 export default function SortMenu({ currentFilters, currentGenre, type = "movies" }: SortMenuProps) {
     const isMovie = type === "movies"
+    const genres = isMovie ? movieGenres : tvGenres
+
     return (
         <form action={`/${type}`} method="GET" className="flex flex-col md:flex-row gap-3 w-full">            
             {/* filter by genre */}
@@ -26,45 +70,11 @@ export default function SortMenu({ currentFilters, currentGenre, type = "movies"
                     className="w-full bg-[#0f172a] border border-[#2d3f55] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-400 cursor-pointer"
                 >
                     <option value="">All Genres</option>
-                    
-                    {/* same for both */}
-                    <option value={isMovie ? "28" : "10759"}>{isMovie ? "Action" : "Action & Adventure"}</option>
-                    <option value="35">Comedy</option>
-                    <option value="80">Crime</option>
-                    <option value="9648">Mystery</option>
-                    <option value="18">Drama</option>
-                    
-                    {/* only in movies */}
-                    {isMovie && (
-                        <>
-                            <option value="10749">Romance</option>
-                            <option value="12">Adventure</option>
-                            <option value="27">Horror</option>
-                            <option value="53">Thriller</option>
-                            <option value="878">Sci-Fi</option>
-                            <option value="14">Fantasy</option>
-                            <option value="10402">Music</option>
-                        </>
-                    )}
-
-                    {/* in both */}
-                    <option value="36">History</option>
-                    <option value="99">Documentary</option>
-                    <option value="10751">Family</option>
-                    <option value="16">Animation</option>
-
-                    {/* only in tv series */}
-                    {!isMovie && (
-                        <>
-                            <option value="10765">Sci-Fi & Fantasy</option>
-                            <option value="10766">Soap</option>
-                            <option value="10767">Talk</option>
-                            <option value="10764">Reality</option>
-                            <option value="10768">War & Politics</option>
-                            <option value="10763">News</option>
-                            <option value="10762">Kids</option>
-                        </>
-                    )}
+                    {genres.map((genre) => (
+                        <option key={genre.value} value={genre.value}>
+                            {genre.label}
+                        </option>
+                    ))}
                 </select>
             </div>
 

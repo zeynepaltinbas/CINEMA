@@ -9,6 +9,7 @@ interface NowPlayingStripProps {
 export default function NowPlayingStrip({ movies }: NowPlayingStripProps) {
     const [isTooltipOpen, setIsTooltipOpen] = useState(false)
     const tooltipRef = useRef<HTMLDivElement>(null)
+    const scrollRef = useRef<HTMLDivElement>(null)
     
     const [searchTerm, setSearchTerm] = useState("")
 
@@ -35,6 +36,16 @@ export default function NowPlayingStrip({ movies }: NowPlayingStripProps) {
         return title.toLowerCase().includes(searchTerm.toLowerCase())
     })
 
+    function scrollMovies(direction: "left" | "right") {
+        if (!scrollRef.current) return
+
+        const scrollAmount = scrollRef.current.clientWidth * 0.8
+        scrollRef.current.scrollBy({
+            left: direction === "left" ? -scrollAmount : scrollAmount,
+            behavior: "smooth"
+        })
+    }
+
     return (
         <section className="mb-5 border-b border-[#2d3f55] pb-6">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
@@ -58,20 +69,42 @@ export default function NowPlayingStrip({ movies }: NowPlayingStripProps) {
                     </div>
                 </div>
 
-                <div className="w-full sm:w-48">
-                    <input
-                        type="text"
-                        placeholder="Search in Now Playing..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-[#1e293b] border border-[#2d3f55] rounded-lg px-2.5 py-1 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-400 transition-colors"
-                    />
+                <div className="w-full sm:w-auto flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                        <button
+                            type="button"
+                            onClick={() => scrollMovies("left")}
+                            className="w-8 h-8 grid place-items-center bg-[#1e293b] border border-[#2d3f55] text-slate-300 hover:text-indigo-400 hover:border-indigo-400/60 rounded-lg transition-colors cursor-pointer"
+                            aria-label="Scroll now playing left"
+                        >
+                            ‹
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => scrollMovies("right")}
+                            className="w-8 h-8 grid place-items-center bg-[#1e293b] border border-[#2d3f55] text-slate-300 hover:text-indigo-400 hover:border-indigo-400/60 rounded-lg transition-colors cursor-pointer"
+                            aria-label="Scroll now playing right"
+                        >
+                            ›
+                        </button>
+                    </div>
+
+                    <div className="flex-1 sm:w-48">
+                        <input
+                            type="text"
+                            placeholder="Search in Now Playing..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full bg-[#1e293b] border border-[#2d3f55] rounded-lg px-2.5 py-1 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-400 transition-colors"
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* horizontal scroll strip */}
             {filteredMovies.length > 0 ? (
-                <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+                <div ref={scrollRef}
+                    className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
                     style={{ scrollbarWidth: "none" }}
                 >
                     {filteredMovies.map((movie) => {
