@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import type { ReactNode } from "react"
 import { useAuth } from "./AuthProvider"
 import { useNotification } from "./NotificationProvider"
+import type { MediaItem } from "@/types/media"
 
 export type MediaType = "movie" | "tv"
 export type ListType = "favourites" | "watchlist"
@@ -14,7 +15,7 @@ export interface SavedItem {
     media_id: number;
     media_type: MediaType;
     list_type: ListType;
-    item: Record<string, unknown>;
+    item: MediaItem;
     created_at: string;
 }
 
@@ -22,7 +23,7 @@ interface ToggleSavedItem {
     mediaId: number;
     mediaType: MediaType;
     listType: ListType;
-    item: Record<string, unknown>;
+    item: MediaItem;
 }
 
 interface SavedItemsContextValue {
