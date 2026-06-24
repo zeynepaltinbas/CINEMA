@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SavedItemButtons from "./SavedItemButtons";
 import type { MediaItem } from "@/types/media";
+import { TMDB_IMAGE_BASE_URL } from "@/lib/tmdb";
 
 interface ShowProps {
     show: MediaItem;
@@ -20,7 +21,7 @@ export default function ShowBox({ show, currentPage, searchQuery, currentSort, c
             <Link href={`/${type}/${show.id}?from=${currentPage}${searchQuery ? `&query=${searchQuery}` : ''}${currentSort ? `&sort=${currentSort}` : ''}${currentGenre ? `&genre=${currentGenre}` : ''}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`}>
                 <div className="relative aspect-2/3">
                     <img
-                        src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
+                        src={`${TMDB_IMAGE_BASE_URL}/w500${show.poster_path}`}
                         alt={title}
                         className="w-full h-full object-cover"
                     />
