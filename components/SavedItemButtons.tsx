@@ -2,9 +2,10 @@
 
 import { useSavedItems } from "./SavedItemsProvider"
 import type { ListType, MediaType } from "./SavedItemsProvider"
+import type { MediaItem } from "@/types/media"
 
 interface SavedItemButtonsProps {
-    show: any;
+    show: MediaItem;
     type: "movies" | "tv";
 }
 

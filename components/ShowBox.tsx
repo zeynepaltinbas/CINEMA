@@ -1,8 +1,9 @@
 import Link from "next/link";
 import SavedItemButtons from "./SavedItemButtons";
+import type { MediaItem } from "@/types/media";
 
 interface ShowProps {
-    show: any;
+    show: MediaItem;
     currentPage: number;
     searchQuery: string;
     currentSort: string;
