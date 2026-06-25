@@ -1,3 +1,4 @@
+import { TMDB_API_BASE_URL, TMDB_IMAGE_BASE_URL } from "@/lib/tmdb";
 import Link from "next/link";
 import MediaReviewForm from "@/components/MediaReviewForm"
 import MediaReviewsList from "@/components/MediaReviewsList";
@@ -15,7 +16,7 @@ export default async function SeriesInfo({ params, searchParams }: any) {
         : ''
 
     const res = await fetch(
-        `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits,release_dates`
+        `${TMDB_API_BASE_URL}/tv/${seriesId}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits,release_dates`
     )
     const show = await res.json()
 
@@ -35,7 +36,7 @@ export default async function SeriesInfo({ params, searchParams }: any) {
                 {show.backdrop_path && (
                     <div className="absolute top-0 left-0 w-full h-[45vh] overflow-hidden -z-10">
                         <img 
-                            src={`https://image.tmdb.org/t/p/original${show.backdrop_path}`} 
+                            src={`${TMDB_IMAGE_BASE_URL}/original${show.backdrop_path}`} 
                             alt="" 
                             className="w-full h-full object-cover opacity-50 blur-sm"
                         />
@@ -53,7 +54,7 @@ export default async function SeriesInfo({ params, searchParams }: any) {
                 <div className="flex flex-col md:flex-row gap-10">
                     <div className="shrink-0 mx-auto md:mx-0">
                         <img
-                            src={show.poster_path ? `https://image.tmdb.org/t/p/w500${show.poster_path}` : "https://placehold.co/500x750/1e293b/94a3b8?text=No+Poster"}
+                            src={show.poster_path ? `${TMDB_IMAGE_BASE_URL}/w500${show.poster_path}` : "https://placehold.co/500x750/1e293b/94a3b8?text=No+Poster"}
                             alt={show.name}
                             className="w-52 md:w-64 rounded-2xl shadow-lg"
                         />

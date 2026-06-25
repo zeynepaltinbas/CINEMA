@@ -1,4 +1,5 @@
 "use client"
+import { TMDB_IMAGE_BASE_URL } from "@/lib/tmdb"
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 
@@ -119,7 +120,7 @@ export default function NowPlayingStrip({ movies }: NowPlayingStripProps) {
                                     className="group block"
                                 >
                                     <div className="relative aspect-2/3 rounded-xl overflow-hidden border border-[#2d3f55] bg-[#1e293b]">
-                                        <img src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
+                                        <img src={`${TMDB_IMAGE_BASE_URL}/w342${movie.poster_path}`}
                                             alt={title}
                                             className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-200"
                                         />

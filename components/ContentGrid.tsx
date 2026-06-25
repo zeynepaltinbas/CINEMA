@@ -1,9 +1,10 @@
 import Pagination from "@/components/Pagination"
 import ShowBox from "@/components/ShowBox"
+import type { MediaItem } from "@/types/media"
 
 interface ContentGridProps {
     title: string;
-    items: any[];
+    items: MediaItem[];
     totalPages: number;
     currentPage: number;
     searchQuery: string;
@@ -30,7 +31,7 @@ export default function ContentGrid({ title, items, totalPages, currentPage, sea
 
             {items.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {items.map((i: any) => (
+                    {items.map((i) => (
                         <ShowBox
                             key={i.id}
                             show={i}
