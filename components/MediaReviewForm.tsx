@@ -6,13 +6,14 @@ import { useNotification } from "./NotificationProvider"
 import { useSavedItems } from "./SavedItemsProvider"
 import { useEffect, useState } from "react"
 import type { SubmitEvent } from "react"
+import { MediaItem } from "@/types/media"
 
 type MediaType = "movie" | "tv"
 
 interface MediaReviewFormProps {
     mediaId: number;
     mediaType: MediaType;
-    item: Record<string, unknown>;
+    item: MediaItem;
 }
 
 interface Review {

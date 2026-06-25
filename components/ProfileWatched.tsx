@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { useSavedItems } from "./SavedItemsProvider"
+import { MediaItem } from "@/types/media"
 
-function getItemTitle(item: Record<string, unknown>) {
+function getItemTitle(item: MediaItem) {
     return typeof item.title === "string"
         ? item.title
         : typeof item.name === "string"
@@ -11,7 +12,7 @@ function getItemTitle(item: Record<string, unknown>) {
             : "Untitled"
 }
 
-function getItemYear(item: Record<string, unknown>) {
+function getItemYear(item: MediaItem) {
     const date = typeof item.release_date === "string"
         ? item.release_date
         : typeof item.first_air_date === "string"
@@ -21,7 +22,7 @@ function getItemYear(item: Record<string, unknown>) {
     return date ? date.slice(0, 4) : ""
 }
 
-function getPosterPath(item: Record<string, unknown>) {
+function getPosterPath(item: MediaItem) {
     return typeof item.poster_path === "string" ? item.poster_path : ""
 }
 
