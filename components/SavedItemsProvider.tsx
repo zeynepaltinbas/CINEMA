@@ -8,7 +8,7 @@ import { useNotification } from "./NotificationProvider"
 import type { MediaItem } from "@/types/media"
 
 export type MediaType = "movie" | "tv"
-export type ListType = "favourites" | "watchlist"
+export type ListType = "favourites" | "watchlist" | "watched"
 
 export interface SavedItem {
     id: number;

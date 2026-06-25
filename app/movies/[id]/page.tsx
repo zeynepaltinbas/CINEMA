@@ -1,6 +1,8 @@
 // Next.js will pass params.id into this file
 import { TMDB_API_BASE_URL, TMDB_IMAGE_BASE_URL } from "@/lib/tmdb"
 import Link from "next/link"
+import MediaReviewForm from "@/components/MediaReviewForm"
+import MediaReviewsList from "@/components/MediaReviewsList"
 
 export default async function MovieInfo({ params, searchParams }: any) {
     const params2 = await params
@@ -11,7 +13,7 @@ export default async function MovieInfo({ params, searchParams }: any) {
     const genre = searchPar.genre || ''
     const sort = searchPar.sort || ''
     const tab = searchPar.tab || ''
-    const returnTo = searchPar.returnTo === '/favourites' || searchPar.returnTo === '/watchlist'
+    const returnTo = searchPar.returnTo === '/favourites' || searchPar.returnTo === '/watchlist' || searchPar.returnTo === '/profile'
         ? searchPar.returnTo
         : ''
 
@@ -22,6 +24,13 @@ export default async function MovieInfo({ params, searchParams }: any) {
 
     const topCast = movie.credits?.cast?.slice(0, 5) || []
     const director = movie.credits?.crew?.find((member: any) => member.job === "Director")
+    const reviewItem = {
+        id: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        vote_average: movie.vote_average,
+        release_date: movie.release_date,
+    }
 
     return (
         <>
@@ -117,6 +126,17 @@ export default async function MovieInfo({ params, searchParams }: any) {
                         </div>
                     </div>
                 </div>
+
+                <MediaReviewForm
+                    mediaId={movie.id}
+                    mediaType="movie"
+                    item={reviewItem}
+                />
+
+                <MediaReviewsList
+                    mediaId={movie.id}
+                    mediaType="movie"
+                />
             </main>
         </>
     )
