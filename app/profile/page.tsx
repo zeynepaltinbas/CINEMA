@@ -4,6 +4,8 @@ import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/components/AuthProvider"
 import { useNotification } from "@/components/NotificationProvider"
 import { profileGenres } from "@/components/SortMenu"
+import ProfileReviews from "@/components/ProfileReviews"
+import ProfileWatched from "@/components/ProfileWatched"
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import type { ChangeEvent } from "react"
@@ -24,7 +26,7 @@ const emptyProfile: ProfileForm = {
     bday: "",
     favGenres: [],
     avatarUrl: "",
-    bio: ""
+    bio: "",
 }
 
 function getMetadataValue(value: unknown) {
@@ -71,9 +73,10 @@ export default function ProfilePage() {
     const [isSaving, setIsSaving] = useState(false)
     const [error, setError] = useState("")
 
-    const fullName = `${profile.firstName} ${profile.lastName}`.trim()
-        || user?.email?.split("@")[0]
-        || "Your Profile"
+    const fullName = useMemo(() => {
+        const name = `${profile.firstName} ${profile.lastName}`.trim()
+        return name || user?.email?.split("@")[0] || "Your profile"
+    }, [profile.firstName, profile.lastName, user?.email])
 
     const avatarInitial = fullName.charAt(0).toUpperCase()
 
@@ -122,7 +125,7 @@ export default function ProfilePage() {
                     ? getGenreValues(data?.fav_genres)
                     : getGenreValues(metadata.fav_genres),
                 avatarUrl: data?.avatar_url || getMetadataValue(metadata.avatar_url),
-                bio: data?.bio || ""
+                bio: data?.bio || "",
             }
 
             setProfile(loadedProfile)
@@ -140,7 +143,7 @@ export default function ProfilePage() {
     function updateField(field: keyof ProfileForm, value: string) {
         setProfile((currentProfile) => ({
             ...currentProfile,
-            [field]: value
+            [field]: value,
         }))
     }
 
@@ -149,7 +152,7 @@ export default function ProfilePage() {
             ...currentProfile,
             favGenres: currentProfile.favGenres.includes(genre)
                 ? currentProfile.favGenres.filter((currentGenre) => currentGenre !== genre)
-                : [...currentProfile.favGenres, genre]
+                : [...currentProfile.favGenres, genre],
         }))
     }
 
@@ -191,7 +194,7 @@ export default function ProfilePage() {
             .from("avatars")
             .upload(filePath, file, {
                 cacheControl: "3600",
-                upsert: true
+                upsert: true,
             })
 
         if (uploadError) {
@@ -210,7 +213,7 @@ export default function ProfilePage() {
             .from("profiles")
             .upsert({
                 id: user.id,
-                avatar_url: avatarUrl
+                avatar_url: avatarUrl,
             })
 
         if (profileError) {
@@ -221,8 +224,8 @@ export default function ProfilePage() {
 
         const { error: authError } = await supabase.auth.updateUser({
             data: {
-                avatar_url: avatarUrl
-            }
+                avatar_url: avatarUrl,
+            },
         })
 
         setIsSaving(false)
@@ -234,11 +237,11 @@ export default function ProfilePage() {
 
         setProfile((currentProfile) => ({
             ...currentProfile,
-            avatarUrl
+            avatarUrl,
         }))
         setSavedProfile((currentProfile) => ({
             ...currentProfile,
-            avatarUrl
+            avatarUrl,
         }))
         showNotification("Avatar updated successfully.")
     }
@@ -259,7 +262,7 @@ export default function ProfilePage() {
             ...profile,
             firstName,
             lastName,
-            bio
+            bio,
         }
 
         const { error: saveError } = await supabase
@@ -271,7 +274,7 @@ export default function ProfilePage() {
                 bday: profile.bday || null,
                 fav_genres: profile.favGenres,
                 avatar_url: profile.avatarUrl || null,
-                bio
+                bio,
             })
 
         if (saveError) {
@@ -289,8 +292,8 @@ export default function ProfilePage() {
                 full_name: `${firstName} ${lastName}`.trim(),
                 bday: profile.bday,
                 fav_genres: profile.favGenres,
-                avatar_url: profile.avatarUrl
-            }
+                avatar_url: profile.avatarUrl,
+            },
         })
 
         setIsSaving(false)
@@ -324,7 +327,7 @@ export default function ProfilePage() {
         setError("")
 
         const { error: passwordError } = await supabase.auth.updateUser({
-            password: newPassword
+            password: newPassword,
         })
 
         setIsSaving(false)
@@ -544,6 +547,10 @@ export default function ProfilePage() {
                     </div>
                 )}
             </section>
+
+            <ProfileReviews userId={user.id} />
+
+            <ProfileWatched />
 
             <section className="mt-5 bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4">

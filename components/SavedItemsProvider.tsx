@@ -7,7 +7,7 @@ import { useAuth } from "./AuthProvider"
 import { useNotification } from "./NotificationProvider"
 
 export type MediaType = "movie" | "tv"
-export type ListType = "favourites" | "watchlist"
+export type ListType = "favourites" | "watchlist" | "watched"
 
 export interface SavedItem {
     id: number;

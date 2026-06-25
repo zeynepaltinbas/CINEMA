@@ -33,8 +33,10 @@ export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) 
 
     const favouriteIsSaved = isSaved(show.id, mediaType, "favourites")
     const watchlistIsSaved = isSaved(show.id, mediaType, "watchlist")
+    const watchedIsSaved = isSaved(show.id, mediaType, "watched")
     const favouriteIsPending = isPending(show.id, mediaType, "favourites")
     const watchlistIsPending = isPending(show.id, mediaType, "watchlist")
+    const watchedIsPending = isPending(show.id, mediaType, "watched")
 
     return (
         <div className="flex items-center gap-1.5">
@@ -71,6 +73,24 @@ export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) 
             >
                 <span aria-hidden="true" className="text-sm leading-none">
                     {watchlistIsSaved ? "▣" : "▢"} 
+                </span>
+            </button>
+
+            <button
+                type="button"
+                onClick={() => handleToggle("watched")}
+                disabled={watchedIsPending}
+                aria-label={watchedIsSaved ? "Remove from watched" : "Mark as watched"}
+                aria-pressed={watchedIsSaved}
+                title={watchedIsSaved ? "Remove from watched" : "Mark as watched"}
+                className={`w-7 h-7 grid place-items-center rounded-lg border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                    watchedIsSaved
+                        ? "bg-emerald-400 border-emerald-400 text-[#0f172a]"
+                        : "bg-[#0f172a] border-[#2d3f55] text-slate-400 hover:text-emerald-400 hover:border-emerald-400/60"
+                }`}
+            >
+                <span aria-hidden="true" className="text-sm leading-none">
+                    ✓
                 </span>
             </button>
         </div>

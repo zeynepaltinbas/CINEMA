@@ -1,4 +1,6 @@
 import Link from "next/link";
+import MediaReviewForm from "@/components/MediaReviewForm"
+import MediaReviewsList from "@/components/MediaReviewsList";
 
 export default async function SeriesInfo({ params, searchParams }: any) {
     const params2 = await params
@@ -8,7 +10,7 @@ export default async function SeriesInfo({ params, searchParams }: any) {
     const searchQuery = searchPar.query || ''
     const genre = searchPar.genre || ''
     const sort = searchPar.sort || ''
-    const returnTo = searchPar.returnTo === '/favourites' || searchPar.returnTo === '/watchlist'
+    const returnTo = searchPar.returnTo === '/favourites' || searchPar.returnTo === '/watchlist' || searchPar.returnTo === '/profile'
         ? searchPar.returnTo
         : ''
 
@@ -19,6 +21,13 @@ export default async function SeriesInfo({ params, searchParams }: any) {
 
     const topCast = show.credits?.cast?.slice(0, 5) || []
     const creators = show.created_by || []
+    const reviewItem = {
+        id: show.id,
+        name: show.name,
+        poster_path: show.poster_path,
+        vote_average: show.vote_average,
+        first_air_date: show.first_air_date,
+    }
 
     return (
         <>
@@ -124,6 +133,17 @@ export default async function SeriesInfo({ params, searchParams }: any) {
                         </div>
                     </div>
                 </div>
+
+                <MediaReviewForm
+                    mediaId={show.id}
+                    mediaType="tv"
+                    item={reviewItem}
+                />
+
+                <MediaReviewsList
+                    mediaId={show.id}
+                    mediaType="tv"
+                />
             </main>
         </>
     )
