@@ -1,4 +1,5 @@
 import ContentGrid from "@/components/ContentGrid";
+import { TMDB_API_BASE_URL } from "@/lib/tmdb";
 
 export default async function TvPage({ searchParams }: any) {
     const params = await searchParams
@@ -8,8 +9,8 @@ export default async function TvPage({ searchParams }: any) {
     const currentGenre = params.genre || ""
 
     const endpoint = searchQuery 
-        ? `https://api.themoviedb.org/3/search/tv?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&query=${searchQuery}`
-        : `https://api.themoviedb.org/3/discover/tv?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&sort_by=${currentSort}${currentGenre ? `&with_genres=${currentGenre}` : ""}`
+        ? `${TMDB_API_BASE_URL}/search/tv?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&query=${searchQuery}`
+        : `${TMDB_API_BASE_URL}/discover/tv?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&sort_by=${currentSort}${currentGenre ? `&with_genres=${currentGenre}` : ""}`
 
     const res = await fetch(endpoint)
     const data = await res.json()

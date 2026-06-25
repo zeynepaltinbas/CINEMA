@@ -1,5 +1,6 @@
 import ContentGrid from "@/components/ContentGrid";
 import NowPlayingStrip from "@/components/NowPlaying";
+import { TMDB_API_BASE_URL } from "@/lib/tmdb";
 
 export default async function MoviesPage({ searchParams }: any) {
     const params = await searchParams
@@ -9,10 +10,10 @@ export default async function MoviesPage({ searchParams }: any) {
     const currentGenre = params.genre || ""
 
     const endpoint = searchQuery
-        ? `https://api.themoviedb.org/3/search/movie?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&query=${encodeURIComponent(searchQuery)}&region=TR`
-        : `https://api.themoviedb.org/3/discover/movie?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&sort_by=${currentSort}${currentGenre ? `&with_genres=${currentGenre}` : ""}`
+        ? `${TMDB_API_BASE_URL}/search/movie?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&query=${encodeURIComponent(searchQuery)}&region=TR`
+        : `${TMDB_API_BASE_URL}/discover/movie?api_key=${process.env.TMDB_API_KEY}&page=${currentPage}&sort_by=${currentSort}${currentGenre ? `&with_genres=${currentGenre}` : ""}`
 
-    const nowPlayingEndpoint = `https://api.themoviedb.org/3/movie/now_playing?api_key=${process.env.TMDB_API_KEY}&region=TR`
+    const nowPlayingEndpoint = `${TMDB_API_BASE_URL}/movie/now_playing?api_key=${process.env.TMDB_API_KEY}&region=TR`
 
     const [res, nowPlayingRes] = await Promise.all([
         fetch(endpoint),
