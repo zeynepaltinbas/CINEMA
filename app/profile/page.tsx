@@ -20,6 +20,8 @@ interface ProfileForm {
     bio: string;
 }
 
+type ProfileTab = "reviews" | "watched" | "settings"
+
 const emptyProfile: ProfileForm = {
     firstName: "",
     lastName: "",
@@ -40,20 +42,21 @@ function getGenreValues(value: unknown) {
 }
 
 function ProfileAvatar({ avatarUrl, initial, size = "large" }: { avatarUrl: string; initial: string; size?: "large" | "small" }) {
-    const sizeClass = size === "large" ? "w-20 h-20 text-3xl" : "w-14 h-14 text-xl"
+    const sizeClass = size === "large" ? "w-28 h-28 text-4xl sm:w-32 sm:h-32" : "w-14 h-14 text-xl"
+    const borderClass = size === "large" ? "border-4 border-pink-300 shadow-2xl shadow-pink-500/20" : "border border-[#2d3f55]"
 
     if (avatarUrl) {
         return (
             <img
                 src={avatarUrl}
                 alt=""
-                className={`${sizeClass} rounded-full object-cover border border-[#2d3f55]`}
+                className={`${sizeClass} rounded-full object-cover ${borderClass}`}
             />
         )
     }
 
     return (
-        <div className={`${sizeClass} rounded-full bg-[#d11c7f] text-white grid place-items-center font-bold border border-[#2d3f55]`}>
+        <div className={`${sizeClass} rounded-full bg-[#d11c7f] text-white grid place-items-center font-bold ${borderClass}`}>
             {initial}
         </div>
     )
@@ -72,6 +75,7 @@ export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
     const [error, setError] = useState("")
+    const [activeTab, setActiveTab] = useState<ProfileTab>("reviews")
 
     const fullName = useMemo(() => {
         const name = `${profile.firstName} ${profile.lastName}`.trim()
@@ -364,27 +368,80 @@ export default function ProfilePage() {
     }
 
     return (
-        <main className="min-h-screen px-4 max-w-5xl mx-auto py-6 sm:py-10">
-            <section className="bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0">
+        <main className="min-h-screen bg-[#0b1220] pb-10">
+            <section className="relative overflow-hidden border-b border-[#1f2b3d]">
+                <div className="absolute inset-x-0 top-0 h-72 sm:h-80">
+                    <img
+                        src="/profile-cover.png"
+                        alt=""
+                        className="h-full w-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-[#07101f]/25" />
+                    <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-[#0b1220]" />
+                </div>
+
+                <div className="relative mx-auto flex max-w-5xl flex-col items-center px-4 pb-6 pt-36 text-center sm:pt-44">
+                    <div className="relative">
                         <ProfileAvatar avatarUrl={profile.avatarUrl} initial={avatarInitial} />
-                        <div className="min-w-0">
-                            <h1 className="text-2xl font-bold text-slate-100 wrap-break-word">{fullName}</h1>
-                            <p className="text-sm text-slate-400 wrap-break-word">{user.email}</p>
-                        </div>
+                        <label className="absolute bottom-1 right-1 grid h-10 w-10 place-items-center rounded-full bg-emerald-400 text-[#07101f] shadow-lg shadow-emerald-400/20 transition-colors hover:bg-emerald-300 cursor-pointer">
+                            <span className="sr-only">Change avatar</span>
+                            <span aria-hidden="true" className="text-lg leading-none">▣</span>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleAvatarChange}
+                                className="sr-only"
+                            />
+                        </label>
                     </div>
 
-                    {!isEditingProfile && (
-                        <button
-                            type="button"
-                            onClick={() => setIsEditingProfile(true)}
-                            className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
-                        >
-                            Edit
-                        </button>
+                    <h1 className="mt-5 max-w-full wrap-break-word text-4xl font-black text-slate-100 sm:text-5xl">{fullName}</h1>
+                    <div className="mt-3 flex max-w-full flex-col items-center gap-3 sm:flex-row">
+                        <p className="max-w-full wrap-break-word text-sm font-semibold text-slate-300">{user.email}</p>
+                        {!isEditingProfile && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setActiveTab("settings")
+                                    setIsEditingProfile(true)
+                                }}
+                                className="rounded-lg bg-slate-700/70 px-4 py-2 text-xs font-bold text-slate-100 transition-colors hover:bg-slate-600 cursor-pointer"
+                            >
+                                Edit Profile
+                            </button>
+                        )}
+                    </div>
+
+                    {profile.bio && !isEditingProfile && (
+                        <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300">{profile.bio}</p>
                     )}
+
+                    <nav className="mt-8 flex w-full max-w-2xl items-center justify-center gap-2 border-b border-[#1f2b3d] sm:gap-6">
+                        {[
+                            { id: "reviews", label: "Reviews" },
+                            { id: "watched", label: "Watched" },
+                            { id: "settings", label: "Settings" },
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id as ProfileTab)}
+                                className={`border-b-2 px-3 py-3 text-sm font-bold transition-colors cursor-pointer ${activeTab === tab.id
+                                    ? "border-emerald-400 text-emerald-400"
+                                    : "border-transparent text-slate-300 hover:text-slate-100"
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
                 </div>
+            </section>
+
+            <div className="mx-auto max-w-5xl px-4">
+                {activeTab === "settings" && (
+                    <>
+                    <section className="mt-6 bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
 
                 {isEditingProfile ? (
                     <form onSubmit={handleProfileSubmit} className="mt-6 space-y-5">
@@ -548,11 +605,7 @@ export default function ProfilePage() {
                 )}
             </section>
 
-            <ProfileReviews userId={user.id} />
-
-            <ProfileWatched />
-
-            <section className="mt-5 bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
+                    <section className="mt-5 bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div>
                         <h2 className="text-lg font-bold text-slate-100">Account security</h2>
@@ -626,7 +679,14 @@ export default function ProfilePage() {
                         </div>
                     </form>
                 )}
-            </section>
+                    </section>
+                    </>
+                )}
+
+                {activeTab === "reviews" && <ProfileReviews userId={user.id} />}
+
+                {activeTab === "watched" && <ProfileWatched />}
+            </div>
         </main>
     )
 }

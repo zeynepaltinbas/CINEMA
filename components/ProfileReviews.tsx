@@ -4,6 +4,8 @@ import { supabase } from "@/lib/supabase"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useNotification } from "./NotificationProvider"
+import { MediaItem } from "@/types/media"
+import { TMDB_IMAGE_BASE_URL } from "@/lib/tmdb"
 
 type MediaType = "movie" | "tv"
 
@@ -13,7 +15,7 @@ interface MediaReview {
     media_type: MediaType;
     rating: number;
     comment: string | null;
-    item: Record<string, unknown>;
+    item: MediaItem;
     updated_at: string;
 }
 
@@ -21,7 +23,7 @@ interface ProfileReviewsProps {
     userId: string;
 }
 
-function getItemTitle(item: Record<string, unknown>) {
+function getItemTitle(item: MediaItem) {
     return typeof item.title === "string"
         ? item.title
         : typeof item.name === "string"
@@ -29,7 +31,7 @@ function getItemTitle(item: Record<string, unknown>) {
             : "Untitled"
 }
 
-function getItemYear(item: Record<string, unknown>) {
+function getItemYear(item: MediaItem) {
     const date = typeof item.release_date === "string"
         ? item.release_date
         : typeof item.first_air_date === "string"
@@ -39,7 +41,7 @@ function getItemYear(item: Record<string, unknown>) {
     return date ? date.slice(0, 4) : ""
 }
 
-function getPosterPath(item: Record<string, unknown>) {
+function getPosterPath(item: MediaItem) {
     return typeof item.poster_path === "string" ? item.poster_path : ""
 }
 
@@ -142,7 +144,7 @@ export default function ProfileReviews({ userId }: ProfileReviewsProps) {
                                     <div className="w-14 h-20 shrink-0 rounded-lg overflow-hidden bg-[#1e293b] border border-[#2d3f55]">
                                         {posterPath ? (
                                             <img
-                                                src={`https://image.tmdb.org/t/p/w185${posterPath}`}
+                                                src={`${TMDB_IMAGE_BASE_URL}/w185${posterPath}`}
                                                 alt={title}
                                                 className="w-full h-full object-cover"
                                             />

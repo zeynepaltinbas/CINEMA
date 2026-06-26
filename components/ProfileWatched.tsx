@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useSavedItems } from "./SavedItemsProvider"
 import { MediaItem } from "@/types/media"
+import { TMDB_IMAGE_BASE_URL } from "@/lib/tmdb"
 
 function getItemTitle(item: MediaItem) {
     return typeof item.title === "string"
@@ -71,7 +72,7 @@ export default function ProfileWatched() {
                                     <div className="w-14 h-20 shrink-0 rounded-lg overflow-hidden bg-[#1e293b] border border-[#2d3f55]">
                                         {posterPath ? (
                                             <img
-                                                src={`https://image.tmdb.org/t/p/w185${posterPath}`}
+                                                src={`${TMDB_IMAGE_BASE_URL}w185${posterPath}`}
                                                 alt={title}
                                                 className="w-full h-full object-cover"
                                             />
