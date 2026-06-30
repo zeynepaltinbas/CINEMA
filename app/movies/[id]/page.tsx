@@ -3,6 +3,7 @@ import { TMDB_API_BASE_URL, TMDB_IMAGE_BASE_URL } from "@/lib/tmdb"
 import Link from "next/link"
 import MediaReviewForm from "@/components/MediaReviewForm"
 import MediaReviewsList from "@/components/MediaReviewsList"
+import SavedItemButtons from "@/components/SavedItemButtons"
 
 export default async function MovieInfo({ params, searchParams }: any) {
     const params2 = await params
@@ -69,6 +70,8 @@ export default async function MovieInfo({ params, searchParams }: any) {
                             </div>
                             <p className="text-slate-400 italic text-sm mt-1">{movie.tagline}</p>
                         </div>
+
+                        <SavedItemButtons show={reviewItem} type="movies" variant="detail" />
 
                         <div className="flex flex-wrap gap-2">
                             {movie.genres.map((g: any) => (

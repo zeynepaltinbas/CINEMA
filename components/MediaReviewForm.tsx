@@ -31,6 +31,7 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
     const [review, setReview] = useState<Review | null>(null)
     const [rating, setRating] = useState(0)
     const [comment, setComment] = useState("")
+    const [isReviewEditorOpen, setIsReviewEditorOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     const [error, setError] = useState("")
@@ -44,6 +45,7 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
             setReview(null)
             setRating(0)
             setComment("")
+            setIsReviewEditorOpen(false)
 
             if (!user) return
 
@@ -70,6 +72,7 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
                 setReview(data as Review)
                 setRating(data.rating)
                 setComment(data.comment ?? "")
+                setIsReviewEditorOpen(true)
             }
 
             setIsLoading(false)
@@ -149,6 +152,7 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
         setReview(null)
         setRating(0)
         setComment("")
+        setIsReviewEditorOpen(false)
         window.dispatchEvent(new CustomEvent("media-review-change", {
             detail: { mediaId, mediaType },
         }))
@@ -176,14 +180,14 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
         <section className="mt-8 bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
             {!user ? (
                 <>
-                    <h2 className="text-lg font-bold text-slate-100">Your review</h2>
-                    <p className="text-sm text-slate-400 mt-1">Sign in to mark this as watched and add a review.</p>
+                    <h2 className="text-lg font-bold text-slate-100">Review</h2>
+                    <p className="text-sm text-slate-400 mt-1">Sign in to save this title and add a rating.</p>
                 </>
             ) : !isWatched ? (
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h2 className="text-lg font-bold text-slate-100">Your review</h2>
-                        <p className="text-sm text-slate-400 mt-1">Mark this as watched before rating or commenting.</p>
+                        <h2 className="text-lg font-bold text-slate-100">Watched it?</h2>
+                        <p className="text-sm text-slate-400 mt-1">Save it to watched, then add a rating when you are ready.</p>
                     </div>
                     <button
                         type="button"
@@ -191,20 +195,42 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
                         disabled={watchedIsPending}
                         className="bg-emerald-400 hover:bg-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed text-[#0f172a] text-sm font-bold px-5 py-3 rounded-xl transition-colors cursor-pointer"
                     >
-                        {watchedIsPending ? "Saving..." : "✓ Mark watched"}
+                        {watchedIsPending ? "Saving..." : "Mark watched"}
+                    </button>
+                </div>
+            ) : !isReviewEditorOpen ? (
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-[profileModalIn_220ms_ease-out]">
+                    <div>
+                        <h2 className="text-lg font-bold text-slate-100">Watched</h2>
+                        <p className="text-sm text-slate-400 mt-1">Add your rating whenever you want.</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setIsReviewEditorOpen(true)}
+                        className="bg-emerald-400 hover:bg-emerald-300 text-[#0f172a] text-sm font-bold px-5 py-3 rounded-xl transition-colors cursor-pointer"
+                    >
+                        Add review
                     </button>
                 </div>
             ) : (
-                <>
+                <div className="animate-[profileModalIn_220ms_ease-out]">
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <h2 className="text-lg font-bold text-slate-100">Your review</h2>
-                    <p className="text-sm text-slate-400 mt-1">
-                        {user ? "Rate it and leave a note for your profile." : "Sign in to add your rating and comment."}
-                    </p>
+                    <h2 className="text-lg font-bold text-slate-100">Rate this title</h2>
                 </div>
 
-                {review && (
+                <div className="flex items-center gap-3">
+                    {!review && (
+                        <button
+                            type="button"
+                            onClick={() => setIsReviewEditorOpen(false)}
+                            disabled={isSaving}
+                            className="text-xs font-bold text-slate-400 hover:text-slate-200 disabled:opacity-60 transition-colors cursor-pointer"
+                        >
+                            Close
+                        </button>
+                    )}
+                    {review && (
                     <button
                         type="button"
                         onClick={handleDelete}
@@ -213,7 +239,8 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
                     >
                         Delete
                     </button>
-                )}
+                    )}
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} className="mt-5 space-y-4">
@@ -264,7 +291,7 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
                     {isSaving ? "Saving..." : review ? "Update review" : "Save review"}
                 </button>
             </form>
-                </>
+                </div>
             )}
         </section>
     )

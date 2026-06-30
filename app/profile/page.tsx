@@ -7,7 +7,7 @@ import { profileGenres } from "@/components/SortMenu"
 import ProfileReviews from "@/components/ProfileReviews"
 import ProfileWatched from "@/components/ProfileWatched"
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import type { ChangeEvent } from "react"
 import type { SubmitEvent } from "react"
 
@@ -17,8 +17,11 @@ interface ProfileForm {
     bday: string;
     favGenres: string[];
     avatarUrl: string;
+    coverUrl: string;
     bio: string;
 }
+
+type ProfileTab = "reviews" | "watched" | "settings"
 
 const emptyProfile: ProfileForm = {
     firstName: "",
@@ -26,6 +29,7 @@ const emptyProfile: ProfileForm = {
     bday: "",
     favGenres: [],
     avatarUrl: "",
+    coverUrl: "",
     bio: "",
 }
 
@@ -40,20 +44,21 @@ function getGenreValues(value: unknown) {
 }
 
 function ProfileAvatar({ avatarUrl, initial, size = "large" }: { avatarUrl: string; initial: string; size?: "large" | "small" }) {
-    const sizeClass = size === "large" ? "w-20 h-20 text-3xl" : "w-14 h-14 text-xl"
+    const sizeClass = size === "large" ? "w-28 h-28 text-4xl sm:w-32 sm:h-32" : "w-14 h-14 text-xl"
+    const borderClass = size === "large" ? "border-4 border-pink-300 shadow-2xl shadow-pink-500/20" : "border border-[#2d3f55]"
 
     if (avatarUrl) {
         return (
             <img
                 src={avatarUrl}
                 alt=""
-                className={`${sizeClass} rounded-full object-cover border border-[#2d3f55]`}
+                className={`${sizeClass} rounded-full object-cover ${borderClass}`}
             />
         )
     }
 
     return (
-        <div className={`${sizeClass} rounded-full bg-[#d11c7f] text-white grid place-items-center font-bold border border-[#2d3f55]`}>
+        <div className={`${sizeClass} rounded-full bg-[#d11c7f] text-white grid place-items-center font-bold ${borderClass}`}>
             {initial}
         </div>
     )
@@ -68,10 +73,17 @@ export default function ProfilePage() {
     const [confirmPassword, setConfirmPassword] = useState("")
     const [isEditingProfile, setIsEditingProfile] = useState(false)
     const [isChangingPassword, setIsChangingPassword] = useState(false)
+    const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false)
+    const [isCoverMenuOpen, setIsCoverMenuOpen] = useState(false)
+    const [isPasswordPromptOpen, setIsPasswordPromptOpen] = useState(false)
     const [isGenreMenuOpen, setIsGenreMenuOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
     const [error, setError] = useState("")
+    const [activeTab, setActiveTab] = useState<ProfileTab>("reviews")
+    const uploadInputRef = useRef<HTMLInputElement | null>(null)
+    const cameraInputRef = useRef<HTMLInputElement | null>(null)
+    const coverInputRef = useRef<HTMLInputElement | null>(null)
 
     const fullName = useMemo(() => {
         const name = `${profile.firstName} ${profile.lastName}`.trim()
@@ -125,6 +137,7 @@ export default function ProfilePage() {
                     ? getGenreValues(data?.fav_genres)
                     : getGenreValues(metadata.fav_genres),
                 avatarUrl: data?.avatar_url || getMetadataValue(metadata.avatar_url),
+                coverUrl: getMetadataValue(metadata.cover_url),
                 bio: data?.bio || "",
             }
 
@@ -164,20 +177,22 @@ export default function ProfilePage() {
     }
 
     function startPasswordChange() {
-        const isConfirmed = window.confirm("Are you sure you want to change your password?")
+        setIsPasswordPromptOpen(true)
+    }
 
-        if (isConfirmed) {
-            setError("")
-            setNewPassword("")
-            setConfirmPassword("")
-            setIsChangingPassword(true)
-        }
+    function confirmPasswordChange() {
+        setError("")
+        setNewPassword("")
+        setConfirmPassword("")
+        setIsPasswordPromptOpen(false)
+        setIsChangingPassword(true)
     }
 
     async function handleAvatarChange(event: ChangeEvent<HTMLInputElement>) {
         const file = event.target.files?.[0]
 
         if (!file || !user) return
+        setIsAvatarMenuOpen(false)
 
         if (!file.type.startsWith("image/")) {
             setError("Please choose an image file.")
@@ -243,7 +258,71 @@ export default function ProfilePage() {
             ...currentProfile,
             avatarUrl,
         }))
+        event.target.value = ""
         showNotification("Avatar updated successfully.")
+    }
+
+    async function handleCoverChange(event: ChangeEvent<HTMLInputElement>) {
+        const file = event.target.files?.[0]
+
+        if (!file || !user) return
+        setIsCoverMenuOpen(false)
+
+        if (!file.type.startsWith("image/")) {
+            setError("Please choose an image file.")
+            event.target.value = ""
+            return
+        }
+
+        setIsSaving(true)
+        setError("")
+
+        const extension = file.name.split(".").pop()?.toLowerCase() || "jpg"
+        const filePath = `${user.id}/cover-${Date.now()}.${extension}`
+
+        const { error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(filePath, file, {
+                cacheControl: "3600",
+                upsert: true,
+            })
+
+        if (uploadError) {
+            setError(uploadError.message)
+            setIsSaving(false)
+            event.target.value = ""
+            return
+        }
+
+        const { data } = supabase.storage
+            .from("avatars")
+            .getPublicUrl(filePath)
+
+        const coverUrl = data.publicUrl
+        const { error: authError } = await supabase.auth.updateUser({
+            data: {
+                cover_url: coverUrl,
+            },
+        })
+
+        setIsSaving(false)
+
+        if (authError) {
+            setError(authError.message)
+            event.target.value = ""
+            return
+        }
+
+        setProfile((currentProfile) => ({
+            ...currentProfile,
+            coverUrl,
+        }))
+        setSavedProfile((currentProfile) => ({
+            ...currentProfile,
+            coverUrl,
+        }))
+        event.target.value = ""
+        showNotification("Profile backdrop updated successfully.")
     }
 
     async function handleProfileSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -293,6 +372,7 @@ export default function ProfilePage() {
                 bday: profile.bday,
                 fav_genres: profile.favGenres,
                 avatar_url: profile.avatarUrl,
+                cover_url: profile.coverUrl,
             },
         })
 
@@ -364,47 +444,176 @@ export default function ProfilePage() {
     }
 
     return (
-        <main className="min-h-screen px-4 max-w-5xl mx-auto py-6 sm:py-10">
-            <section className="bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                        <ProfileAvatar avatarUrl={profile.avatarUrl} initial={avatarInitial} />
-                        <div className="min-w-0">
-                            <h1 className="text-2xl font-bold text-slate-100 wrap-break-word">{fullName}</h1>
-                            <p className="text-sm text-slate-400 wrap-break-word">{user.email}</p>
-                        </div>
-                    </div>
-
-                    {!isEditingProfile && (
+        <main className="min-h-screen bg-[#0b1220] pb-10">
+            <section className="relative overflow-hidden border-b border-[#1f2b3d]">
+                <div className="absolute inset-x-0 top-0 h-72 sm:h-80">
+                    {profile.coverUrl ? (
+                        <img
+                            src={profile.coverUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                        />
+                    ) : (
+                        <div className="h-full w-full bg-[#223a5e]" />
+                    )}
+                    <div className="absolute inset-0 bg-[#07101f]/20" />
+                    <div className="absolute inset-0 bg-linear-to-br from-cyan-300/20 via-transparent to-[#d11c7f]/10" />
+                    <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-[#0b1220]" />
+                    <div className="absolute right-4 top-4 z-30 sm:right-6">
                         <button
                             type="button"
-                            onClick={() => setIsEditingProfile(true)}
-                            className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+                            onClick={() => setIsCoverMenuOpen((isOpen) => !isOpen)}
+                            className="grid h-10 w-10 place-items-center rounded-full bg-emerald-400 text-[#07101f] shadow-lg shadow-emerald-400/20 transition-colors hover:bg-emerald-300 cursor-pointer"
+                            aria-label="Change profile backdrop"
+                            aria-expanded={isCoverMenuOpen}
                         >
-                            Edit
+                            <span aria-hidden="true" className="text-2xl font-black leading-none">+</span>
                         </button>
-                    )}
+
+                        {isCoverMenuOpen && (
+                            <div className="absolute right-0 top-full z-40 mt-3 w-52 overflow-hidden rounded-2xl border border-emerald-300/30 bg-[#101827]/95 p-2 text-left shadow-2xl shadow-black/40 backdrop-blur-md animate-[profileModalIn_180ms_ease-out]">
+                                <label className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-100 transition-colors hover:bg-emerald-400/10 cursor-pointer">
+                                    Upload backdrop
+                                    <input
+                                        ref={coverInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleCoverChange}
+                                        className="sr-only"
+                                    />
+                                </label>
+                            </div>
+                        )}
+                    </div>
                 </div>
+
+                <div className="relative mx-auto flex max-w-5xl flex-col items-center px-4 pb-6 pt-36 text-center sm:pt-44">
+                    <div className="relative">
+                        <ProfileAvatar avatarUrl={profile.avatarUrl} initial={avatarInitial} />
+                        <button
+                            type="button"
+                            onClick={() => setIsAvatarMenuOpen((isOpen) => !isOpen)}
+                            className="absolute bottom-1 right-1 grid h-10 w-10 place-items-center rounded-full bg-emerald-400 text-[#07101f] shadow-lg shadow-emerald-400/20 transition-colors hover:bg-emerald-300 cursor-pointer"
+                            aria-label="Change avatar"
+                            aria-expanded={isAvatarMenuOpen}
+                        >
+                            <span aria-hidden="true" className="text-2xl font-black leading-none">+</span>
+                        </button>
+
+                        {isAvatarMenuOpen && (
+                            <div className="absolute left-1/2 top-full z-30 mt-3 w-52 -translate-x-1/2 overflow-hidden rounded-2xl border border-emerald-300/30 bg-[#101827]/95 p-2 text-left shadow-2xl shadow-black/40 backdrop-blur-md animate-[profileModalIn_180ms_ease-out]">
+                                <label className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-100 transition-colors hover:bg-emerald-400/10 cursor-pointer">
+                                    Upload photo
+                                    <input
+                                        ref={uploadInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleAvatarChange}
+                                        className="sr-only"
+                                    />
+                                </label>
+                                <label className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-100 transition-colors hover:bg-emerald-400/10 cursor-pointer">
+                                    Take a photo
+                                    <input
+                                        ref={cameraInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        capture="user"
+                                        onChange={handleAvatarChange}
+                                        className="sr-only"
+                                    />
+                                </label>
+                            </div>
+                        )}
+
+                    </div>
+
+                    {isAvatarMenuOpen && (
+                        <button
+                            type="button"
+                            aria-label="Close avatar menu"
+                            onClick={() => setIsAvatarMenuOpen(false)}
+                            className="fixed inset-0 z-20 cursor-default"
+                            tabIndex={-1}
+                        />
+                    )}
+
+                    {isCoverMenuOpen && (
+                        <button
+                            type="button"
+                            aria-label="Close backdrop menu"
+                            onClick={() => setIsCoverMenuOpen(false)}
+                            className="fixed inset-0 z-20 cursor-default"
+                            tabIndex={-1}
+                        />
+                    )}
+
+                    <h1 className="mt-5 max-w-full wrap-break-word text-4xl font-black text-slate-100 sm:text-5xl">{fullName}</h1>
+                    <div className="mt-3 flex max-w-full flex-col items-center gap-3 sm:flex-row">
+                        <p className="max-w-full wrap-break-word text-sm font-semibold text-slate-300">{user.email}</p>
+                        {!isEditingProfile && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setActiveTab("settings")
+                                    setIsEditingProfile(true)
+                                }}
+                                className="rounded-lg bg-slate-700/70 px-4 py-2 text-xs font-bold text-slate-100 transition-colors hover:bg-slate-600 cursor-pointer"
+                            >
+                                Edit Profile
+                            </button>
+                        )}
+                    </div>
+
+                    {profile.bio && !isEditingProfile && (
+                        <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300">{profile.bio}</p>
+                    )}
+
+                    <nav className="mt-8 flex w-full max-w-2xl items-center justify-center gap-2 border-b border-[#1f2b3d] sm:gap-6">
+                        {[
+                            { id: "reviews", label: "Reviews" },
+                            { id: "watched", label: "Watched" },
+                            { id: "settings", label: "Settings" },
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                onClick={() => setActiveTab(tab.id as ProfileTab)}
+                                className={`border-b-2 px-3 py-3 text-sm font-bold transition-colors cursor-pointer ${activeTab === tab.id
+                                    ? "border-emerald-400 text-emerald-400"
+                                    : "border-transparent text-slate-300 hover:text-slate-100"
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+            </section>
+
+            <div className="mx-auto max-w-5xl px-4">
+                {activeTab === "settings" && (
+                    <>
+                    <section className="mt-6 bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <h2 className="text-lg font-bold text-slate-100">Account information</h2>
+                                <p className="text-sm text-slate-400 mt-1">Manage your profile details and movie taste.</p>
+                            </div>
+
+                            {!isEditingProfile && (
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditingProfile(true)}
+                                    className="self-start rounded-lg bg-slate-700/70 px-4 py-2 text-xs font-bold text-slate-100 transition-colors hover:bg-slate-600 cursor-pointer"
+                                >
+                                    Edit Profile
+                                </button>
+                            )}
+                        </div>
 
                 {isEditingProfile ? (
                     <form onSubmit={handleProfileSubmit} className="mt-6 space-y-5">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl bg-[#0f172a] border border-[#2d3f55] p-4">
-                            <ProfileAvatar avatarUrl={profile.avatarUrl} initial={avatarInitial} size="small" />
-                            <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-slate-100">Avatar</p>
-                                <p className="text-xs text-slate-500 mt-1">Choose an image from your device.</p>
-                            </div>
-                            <label className="bg-[#2d3f55]/70 hover:bg-[#2d3f55] text-slate-200 text-xs font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer text-center">
-                                Change
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleAvatarChange}
-                                    className="sr-only"
-                                />
-                            </label>
-                        </div>
-
                         <div className="grid sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-semibold text-slate-400 mb-1.5">
@@ -548,11 +757,7 @@ export default function ProfilePage() {
                 )}
             </section>
 
-            <ProfileReviews userId={user.id} />
-
-            <ProfileWatched />
-
-            <section className="mt-5 bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
+                    <section className="mt-5 bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                     <div>
                         <h2 className="text-lg font-bold text-slate-100">Account security</h2>
@@ -626,7 +831,52 @@ export default function ProfilePage() {
                         </div>
                     </form>
                 )}
-            </section>
+                    </section>
+
+                    </>
+                )}
+
+                {activeTab === "reviews" && <ProfileReviews userId={user.id} />}
+
+                {activeTab === "watched" && <ProfileWatched />}
+            </div>
+
+            {isPasswordPromptOpen && (
+                <div
+                    className="fixed inset-0 z-70 grid place-items-center bg-[#020617]/70 px-4 backdrop-blur-sm"
+                    onClick={() => setIsPasswordPromptOpen(false)}
+                >
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="password-confirm-title"
+                        className="w-full max-w-sm rounded-2xl border border-indigo-300/25 bg-[#111827] p-5 text-left shadow-2xl shadow-black/40 animate-[profileModalIn_220ms_ease-out] sm:p-6"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <h2 id="password-confirm-title" className="text-lg font-bold text-slate-100">Change password?</h2>
+                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                            You will enter a new password on the next step.
+                        </p>
+
+                        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setIsPasswordPromptOpen(false)}
+                                className="rounded-xl bg-[#26364b] px-4 py-2.5 text-sm font-bold text-slate-200 transition-colors hover:bg-[#31445f] cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={confirmPasswordChange}
+                                className="rounded-xl bg-[#d11c7f] px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#d11c7f]/15 transition-colors hover:bg-[#b01368] cursor-pointer"
+                            >
+                                Continue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     )
 }

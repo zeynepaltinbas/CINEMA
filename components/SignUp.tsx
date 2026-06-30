@@ -38,12 +38,14 @@ export default function SignUp({ isOpen, onClose, onSwitchToSignIn, onSuccess }:
                 }
             }
         })
-        setIsLoading(false)
 
         if (signUpError) {
+            setIsLoading(false)
             setError(signUpError.message)
             return
         }
+
+        setIsLoading(false)
         setName("")
         setSurname("")
         setEmail("")
