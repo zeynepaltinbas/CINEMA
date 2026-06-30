@@ -43,30 +43,38 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             {children}
 
             {notification && (
-                <div role="status" className="fixed bottom-10 right-4 z-60 w-[calc(100%-2rem)] max-w-sm bg-[#d11c7f]/90 backdrop-blur-sm border border-pink-300/30 rounded-xl shadow-2xl shadow-black/30 p-4 text-sm text-white text-center">
-                <button
-                    type="button"
+                <div
+                    className="fixed inset-0 z-60 grid place-items-center px-4"
                     onClick={closeNotification}
-                    className="absolute top-2 right-3 text-white/70 hover:text-white cursor-pointer"
-                    aria-label="Close notification"
                 >
-                    ✕
-                </button>
-                <p className="px-6">{notification.message}</p>
-                {notification.action && (
-                    <button
-                        type="button"
-                        onClick={() => {
-                            const action = notification.action
-                            closeNotification()
-                            action?.onClick()
-                        }}
-                        className="mt-2 text-white hover:text-pink-100 underline underline-offset-2 font-semibold cursor-pointer"
+                    <div
+                        role="status"
+                        className="relative w-full max-w-md animate-[notificationIn_220ms_ease-out] bg-[#d11c7f]/70 backdrop-blur-md border border-pink-200/30 rounded-2xl shadow-2xl shadow-black/35 px-6 py-5 text-base text-white text-center sm:px-8 sm:py-6 sm:text-lg"
                     >
-                        {notification.action.label}
-                    </button>
-                )}
-            </div>
+                        <button
+                            type="button"
+                            onClick={closeNotification}
+                            className="absolute top-2 right-3 text-white/70 hover:text-white cursor-pointer"
+                            aria-label="Close notification"
+                        >
+                            ✕
+                        </button>
+                        <p className="px-6 font-semibold leading-relaxed">{notification.message}</p>
+                        {notification.action && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const action = notification.action
+                                    closeNotification()
+                                    action?.onClick()
+                                }}
+                                className="mt-3 text-sm text-white hover:text-pink-100 underline underline-offset-2 font-bold cursor-pointer sm:text-base"
+                            >
+                                {notification.action.label}
+                            </button>
+                        )}
+                    </div>
+                </div>
             )}
         </NotificationContext.Provider>
     )

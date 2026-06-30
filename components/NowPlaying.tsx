@@ -32,7 +32,11 @@ export default function NowPlayingStrip({ movies }: NowPlayingStripProps) {
     if (!movies || movies.length === 0) 
         return null
 
-    const filteredMovies = movies.filter((movie) => {
+    const uniqueMovies = movies.filter((movie, index, movieList) => {
+        return movieList.findIndex((currentMovie) => currentMovie.id === movie.id) === index
+    })
+
+    const filteredMovies = uniqueMovies.filter((movie) => {
         const title = movie.title || movie.name || ""
         return title.toLowerCase().includes(searchTerm.toLowerCase())
     })
