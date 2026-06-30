@@ -19,6 +19,43 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
+function getMetadataValue(value: unknown) {
+    return typeof value === "string" ? value : ""
+}
+
+function getGenreValues(value: unknown) {
+    return Array.isArray(value)
+        ? value.filter((genre): genre is string => typeof genre === "string")
+        : []
+}
+
+async function ensureProfileExists(currentUser: User) {
+    const metadata = currentUser.user_metadata
+    const fullNameFromMetadata = getMetadataValue(metadata.full_name)
+    const [firstNameFromFullName = "", ...lastNameParts] = fullNameFromMetadata.split(" ")
+    const firstName = getMetadataValue(metadata.first_name)
+        || getMetadataValue(metadata.name)
+        || firstNameFromFullName
+    const lastName = getMetadataValue(metadata.last_name)
+        || getMetadataValue(metadata.surname)
+        || lastNameParts.join(" ")
+
+    await supabase
+        .from("profiles")
+        .upsert({
+            id: currentUser.id,
+            first_name: firstName,
+            last_name: lastName,
+            bday: getMetadataValue(metadata.bday) || null,
+            fav_genres: getGenreValues(metadata.fav_genres),
+            avatar_url: getMetadataValue(metadata.avatar_url) || null,
+            bio: "",
+        }, {
+            onConflict: "id",
+            ignoreDuplicates: true,
+        })
+}
+
 export function AuthProvider({ children }: {children: ReactNode}) {
     // the angle brackets give ts extra type info (generic type argument)
     const [user, setUser] = useState<User | null>(null)
@@ -49,6 +86,12 @@ export function AuthProvider({ children }: {children: ReactNode}) {
             subscription.unsubscribe()
         }
     }, [])
+
+    useEffect(() => {
+        if (!user) return
+
+        ensureProfileExists(user)
+    }, [user])
 
     async function signOut() {
         const { error } = await supabase.auth.signOut()

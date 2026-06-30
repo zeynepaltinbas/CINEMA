@@ -65,11 +65,11 @@ export default function NowPlayingStrip({ movies }: NowPlayingStripProps) {
                         className="group/tooltip relative inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-500 text-slate-400 hover:text-indigo-400 hover:border-indigo-400 transition-colors text-[10px] select-none font-bold cursor-pointer"
                     >
                         ?
-                        <div className={`absolute left-full top-1/2 -translate-y-1/2 ml-2 w-56 sm:w-64 bg-[#1e293b] border border-[#2d3f55] text-slate-300 text-[11px] sm:text-xs p-2.5 rounded-xl shadow-2xl transition-opacity duration-200 z-50 leading-relaxed font-normal ${
+                        <div className={`absolute left-1/2 top-full mt-2 w-44 -translate-x-1/2 bg-[#1e293b] border border-[#2d3f55] text-slate-300 text-[11px] sm:left-full sm:top-1/2 sm:ml-2 sm:mt-0 sm:w-64 sm:translate-x-0 sm:-translate-y-1/2 sm:text-xs p-2.5 rounded-xl shadow-2xl transition-opacity duration-200 z-50 leading-relaxed font-normal ${
                             isTooltipOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none group-hover/tooltip:opacity-100 group-hover/tooltip:pointer-events-auto"
                         }`}>
                             Some festival or indie movies may not have ticket or screening information available in local theaters.
-                            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#1e293b]" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-[#1e293b] sm:bottom-auto sm:left-auto sm:right-full sm:top-1/2 sm:translate-x-0 sm:-translate-y-1/2 sm:border-b-transparent sm:border-r-[#1e293b]" />
                         </div>
                     </div>
                 </div>

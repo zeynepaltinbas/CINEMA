@@ -7,11 +7,13 @@ import type { MediaItem } from "@/types/media"
 interface SavedItemButtonsProps {
     show: MediaItem;
     type: "movies" | "tv";
+    variant?: "icon" | "detail";
 }
 
-export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) {
+export default function SavedItemButtons({ show, type, variant = "icon" }: SavedItemButtonsProps) {
     const { isSaved, isPending, toggleSavedItem } = useSavedItems()
     const mediaType: MediaType = type === "movies" ? "movie" : "tv"
+    const isDetailVariant = variant === "detail"
 
     const item = {
         id: show.id,
@@ -40,7 +42,7 @@ export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) 
     const watchedIsPending = isPending(show.id, mediaType, "watched")
 
     return (
-        <div className="flex items-center gap-1.5">
+        <div className={isDetailVariant ? "flex flex-wrap items-center gap-2" : "flex items-center gap-1.5"}>
             <button
                 type="button"
                 onClick={() => handleToggle("favourites")}
@@ -48,7 +50,7 @@ export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) 
                 aria-label={favouriteIsSaved ? "Remove from favourites" : "Add to favourites"}
                 aria-pressed={favouriteIsSaved}
                 title={favouriteIsSaved ? "Remove from favourites" : "Add to favourites"}
-                className={`w-7 h-7 grid place-items-center rounded-lg border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`${isDetailVariant ? "inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-bold" : "w-7 h-7 grid place-items-center rounded-lg"} border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                     favouriteIsSaved
                         ? "bg-[#d11c7f] border-[#d11c7f] text-white"
                         : "bg-[#0f172a] border-[#2d3f55] text-slate-400 hover:text-[#d11c7f] hover:border-[#d11c7f]/60"
@@ -57,6 +59,7 @@ export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) 
                 <span aria-hidden="true" className="text-sm leading-none">
                     {favouriteIsSaved ? "❦" : "♡"} 
                 </span>
+                {isDetailVariant && <span>{favouriteIsSaved ? "Favourited" : "Favourite"}</span>}
             </button>
 
             <button
@@ -66,7 +69,7 @@ export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) 
                 aria-label={watchlistIsSaved ? "Remove from watchlist" : "Add to watchlist"}
                 aria-pressed={watchlistIsSaved}
                 title={watchlistIsSaved ? "Remove from watchlist" : "Add to watchlist"}
-                className={`w-7 h-7 grid place-items-center rounded-lg border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`${isDetailVariant ? "inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-bold" : "w-7 h-7 grid place-items-center rounded-lg"} border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                     watchlistIsSaved
                         ? "bg-indigo-400 border-indigo-400 text-[#0f172a]"
                         : "bg-[#0f172a] border-[#2d3f55] text-slate-400 hover:text-indigo-400 hover:border-indigo-400/60"
@@ -75,6 +78,7 @@ export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) 
                 <span aria-hidden="true" className="text-sm leading-none">
                     {watchlistIsSaved ? "▣" : "▢"} 
                 </span>
+                {isDetailVariant && <span>{watchlistIsSaved ? "In watchlist" : "Watchlist"}</span>}
             </button>
 
             <button
@@ -84,7 +88,7 @@ export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) 
                 aria-label={watchedIsSaved ? "Remove from watched" : "Mark as watched"}
                 aria-pressed={watchedIsSaved}
                 title={watchedIsSaved ? "Remove from watched" : "Mark as watched"}
-                className={`w-7 h-7 grid place-items-center rounded-lg border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`${isDetailVariant ? "inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-bold" : "w-7 h-7 grid place-items-center rounded-lg"} border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                     watchedIsSaved
                         ? "bg-emerald-400 border-emerald-400 text-[#0f172a]"
                         : "bg-[#0f172a] border-[#2d3f55] text-slate-400 hover:text-emerald-400 hover:border-emerald-400/60"
@@ -93,6 +97,7 @@ export default function SavedItemButtons({ show, type }: SavedItemButtonsProps) 
                 <span aria-hidden="true" className="text-sm leading-none">
                     ✓
                 </span>
+                {isDetailVariant && <span>{watchedIsSaved ? "Watched" : "Mark watched"}</span>}
             </button>
         </div>
     )

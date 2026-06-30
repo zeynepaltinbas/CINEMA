@@ -1,9 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import { useMemo, useState } from "react"
 import { useSavedItems } from "./SavedItemsProvider"
 import { MediaItem } from "@/types/media"
-import { TMDB_IMAGE_BASE_URL } from "@/lib/tmdb"
 
 function getItemTitle(item: MediaItem) {
     return typeof item.title === "string"
@@ -24,7 +24,17 @@ function getItemYear(item: MediaItem) {
 }
 
 function getPosterPath(item: MediaItem) {
-    return typeof item.poster_path === "string" ? item.poster_path : ""
+    if (typeof item.poster_path === "string") return item.poster_path
+
+    const itemRecord = item as unknown as Record<string, unknown>
+    return typeof itemRecord.posterPath === "string" ? itemRecord.posterPath : ""
+}
+
+function getPosterUrl(posterPath: string) {
+    if (!posterPath) return ""
+    return posterPath.startsWith("http")
+        ? posterPath
+        : `https://image.tmdb.org/t/p/w185${posterPath}`
 }
 
 function formatDate(date: string) {
@@ -38,10 +48,23 @@ function formatDate(date: string) {
 export default function ProfileWatched() {
     const { getSavedItems, isSavedItemsLoading, isPending, toggleSavedItem } = useSavedItems()
     const watchedItems = getSavedItems("watched")
+    const [searchTerm, setSearchTerm] = useState("")
+    const filteredWatchedItems = useMemo(() => {
+        const normalizedSearch = searchTerm.trim().toLowerCase()
+
+        if (!normalizedSearch) return watchedItems
+
+        return watchedItems.filter((watchedItem) => {
+            const title = getItemTitle(watchedItem.item).toLowerCase()
+            const year = getItemYear(watchedItem.item)
+
+            return title.includes(normalizedSearch) || year.includes(normalizedSearch)
+        })
+    }, [searchTerm, watchedItems])
 
     return (
         <section className="mt-5 bg-[#1e293b] border border-[#2d3f55] rounded-xl p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 className="text-lg font-bold text-slate-100">Watched</h2>
                     <p className="text-sm text-slate-400 mt-1">Movies and TV series you marked as watched.</p>
@@ -49,16 +72,33 @@ export default function ProfileWatched() {
                 <span className="text-xs font-bold text-emerald-400">{watchedItems.length}</span>
             </div>
 
+            {watchedItems.length > 0 && (
+                <div className="mt-5">
+                    <label className="sr-only" htmlFor="watched-search">Search watched</label>
+                    <input
+                        id="watched-search"
+                        type="search"
+                        value={searchTerm}
+                        onChange={(event) => setSearchTerm(event.target.value)}
+                        placeholder="Search watched titles"
+                        className="w-full rounded-xl border border-[#2d3f55] bg-[#0f172a] px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 outline-none transition-colors focus:border-emerald-400"
+                    />
+                </div>
+            )}
+
             {isSavedItemsLoading ? (
                 <p className="text-sm text-slate-400 mt-5">Loading watched items...</p>
             ) : watchedItems.length === 0 ? (
                 <p className="text-sm text-slate-500 mt-5">Nothing marked as watched yet.</p>
+            ) : filteredWatchedItems.length === 0 ? (
+                <p className="text-sm text-slate-500 mt-5">No watched titles match your search.</p>
             ) : (
                 <div className="mt-5 grid gap-3">
-                    {watchedItems.map((watchedItem) => {
+                    {filteredWatchedItems.map((watchedItem) => {
                         const title = getItemTitle(watchedItem.item)
                         const year = getItemYear(watchedItem.item)
                         const posterPath = getPosterPath(watchedItem.item)
+                        const posterUrl = getPosterUrl(posterPath)
                         const href = watchedItem.media_type === "movie"
                             ? `/movies/${watchedItem.media_id}?returnTo=/profile`
                             : `/tv/${watchedItem.media_id}?returnTo=/profile`
@@ -70,9 +110,9 @@ export default function ProfileWatched() {
                             >
                                 <Link href={href} className="flex gap-3 min-w-0 flex-1">
                                     <div className="w-14 h-20 shrink-0 rounded-lg overflow-hidden bg-[#1e293b] border border-[#2d3f55]">
-                                        {posterPath ? (
+                                        {posterUrl ? (
                                             <img
-                                                src={`${TMDB_IMAGE_BASE_URL}w185${posterPath}`}
+                                                src={posterUrl}
                                                 alt={title}
                                                 className="w-full h-full object-cover"
                                             />
