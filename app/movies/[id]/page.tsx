@@ -4,6 +4,7 @@ import Link from "next/link"
 import MediaReviewForm from "@/components/MediaReviewForm"
 import MediaReviewsList from "@/components/MediaReviewsList"
 import SavedItemButtons from "@/components/SavedItemButtons"
+import ExternalReviews from "@/components/ExternalReviews"
 
 export default async function MovieInfo({ params, searchParams }: any) {
     const params2 = await params
@@ -137,6 +138,11 @@ export default async function MovieInfo({ params, searchParams }: any) {
                 />
 
                 <MediaReviewsList
+                    mediaId={movie.id}
+                    mediaType="movie"
+                />
+
+                <ExternalReviews
                     mediaId={movie.id}
                     mediaType="movie"
                 />
