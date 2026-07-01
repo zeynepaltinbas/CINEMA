@@ -4,6 +4,7 @@ import MediaReviewForm from "@/components/MediaReviewForm"
 import MediaReviewsList from "@/components/MediaReviewsList";
 import SavedItemButtons from "@/components/SavedItemButtons";
 import ExternalReviews from "@/components/ExternalReviews";
+import Trailer from "@/components/Trailer";
 
 export default async function SeriesInfo({ params, searchParams }: any) {
     const params2 = await params
@@ -18,12 +19,15 @@ export default async function SeriesInfo({ params, searchParams }: any) {
         : ''
 
     const res = await fetch(
-        `${TMDB_API_BASE_URL}/tv/${seriesId}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits,release_dates`
+        `${TMDB_API_BASE_URL}/tv/${seriesId}?api_key=${process.env.TMDB_API_KEY}&append_to_response=credits,release_dates,videos`
     )
     const show = await res.json()
 
     const topCast = show.credits?.cast?.slice(0, 5) || []
     const creators = show.created_by || []
+    const trailer = show.videos?.results?.find((video: any) =>
+        video.site === "YouTube" && video.type === "Trailer"
+    ) || show.videos?.results?.find((video: any) => video.site === "YouTube")
     const reviewItem = {
         id: show.id,
         name: show.name,
@@ -68,7 +72,10 @@ export default async function SeriesInfo({ params, searchParams }: any) {
                             <p className="text-slate-400 italic text-sm">{show.tagline}</p>
                         </div>
 
-                        <SavedItemButtons show={reviewItem} type="tv" variant="detail" />
+                        <div className="flex flex-wrap items-center gap-2">
+                            <SavedItemButtons show={reviewItem} type="tv" variant="detail" />
+                            <Trailer trailerKey={trailer?.key} title={show.name} />
+                        </div>
 
                         <div className="flex flex-wrap gap-2">
                             {show.genres?.map((g: any) => (
