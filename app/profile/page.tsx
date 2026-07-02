@@ -1,6 +1,7 @@
 "use client"
 
 import { supabase } from "@/lib/supabase"
+import { getFriendlyErrorMessage } from "@/lib/errorMessages"
 import { useAuth } from "@/components/AuthProvider"
 import { useNotification } from "@/components/NotificationProvider"
 import { profileGenres } from "@/components/SortMenu"
@@ -115,7 +116,7 @@ export default function ProfilePage() {
             if (!isMounted) return
 
             if (profileError) {
-                setError(profileError.message)
+                setError(getFriendlyErrorMessage(profileError, "Could not load your profile. Please try again."))
                 setIsLoading(false)
                 return
             }
@@ -213,7 +214,7 @@ export default function ProfilePage() {
             })
 
         if (uploadError) {
-            setError(uploadError.message)
+            setError(getFriendlyErrorMessage(uploadError, "Could not upload your avatar. Please try again."))
             setIsSaving(false)
             return
         }
@@ -232,7 +233,7 @@ export default function ProfilePage() {
             })
 
         if (profileError) {
-            setError(profileError.message)
+            setError(getFriendlyErrorMessage(profileError, "Could not save your avatar. Please try again."))
             setIsSaving(false)
             return
         }
@@ -246,7 +247,7 @@ export default function ProfilePage() {
         setIsSaving(false)
 
         if (authError) {
-            setError(authError.message)
+            setError(getFriendlyErrorMessage(authError, "Could not update your avatar. Please try again."))
             return
         }
 
@@ -288,7 +289,7 @@ export default function ProfilePage() {
             })
 
         if (uploadError) {
-            setError(uploadError.message)
+            setError(getFriendlyErrorMessage(uploadError, "Could not upload your backdrop. Please try again."))
             setIsSaving(false)
             event.target.value = ""
             return
@@ -308,7 +309,7 @@ export default function ProfilePage() {
         setIsSaving(false)
 
         if (authError) {
-            setError(authError.message)
+            setError(getFriendlyErrorMessage(authError, "Could not update your backdrop. Please try again."))
             event.target.value = ""
             return
         }
@@ -357,7 +358,7 @@ export default function ProfilePage() {
             })
 
         if (saveError) {
-            setError(saveError.message)
+            setError(getFriendlyErrorMessage(saveError, "Could not save your profile. Please try again."))
             setIsSaving(false)
             return
         }
@@ -379,7 +380,7 @@ export default function ProfilePage() {
         setIsSaving(false)
 
         if (authError) {
-            setError(authError.message)
+            setError(getFriendlyErrorMessage(authError, "Could not update your profile. Please try again."))
             return
         }
 
@@ -413,7 +414,7 @@ export default function ProfilePage() {
         setIsSaving(false)
 
         if (passwordError) {
-            setError(passwordError.message)
+            setError(getFriendlyErrorMessage(passwordError, "Could not update your password. Please try again."))
             return
         }
 

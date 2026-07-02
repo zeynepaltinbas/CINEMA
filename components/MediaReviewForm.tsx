@@ -1,6 +1,7 @@
 "use client"
 
 import { supabase } from "@/lib/supabase"
+import { getFriendlyErrorMessage } from "@/lib/errorMessages"
 import { useAuth } from "./AuthProvider"
 import { useNotification } from "./NotificationProvider"
 import { useSavedItems } from "./SavedItemsProvider"
@@ -23,6 +24,16 @@ interface Review {
 }
 
 const ratings = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+function getMetadataValue(value: unknown) {
+    return typeof value === "string" ? value : ""
+}
+
+function getGenreValues(value: unknown) {
+    return Array.isArray(value)
+        ? value.filter((genre): genre is string => typeof genre === "string")
+        : []
+}
 
 export default function MediaReviewForm({ mediaId, mediaType, item }: MediaReviewFormProps) {
     const { user, isAuthLoading } = useAuth()
@@ -63,7 +74,7 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
             if (!isMounted) return
 
             if (reviewError) {
-                setError(reviewError.message)
+                setError(getFriendlyErrorMessage(reviewError, "Could not load your review. Please try again."))
                 setIsLoading(false)
                 return
             }
@@ -72,7 +83,7 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
                 setReview(data as Review)
                 setRating(data.rating)
                 setComment(data.comment ?? "")
-                setIsReviewEditorOpen(true)
+                setIsReviewEditorOpen(false)
             }
 
             setIsLoading(false)
@@ -101,6 +112,48 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
         setIsSaving(true)
         setError("")
 
+        const { data: existingProfile, error: profileLoadError } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", user.id)
+            .maybeSingle()
+
+        if (profileLoadError) {
+            setError(getFriendlyErrorMessage(profileLoadError, "Could not check your profile. Please try again."))
+            setIsSaving(false)
+            return
+        }
+
+        if (!existingProfile) {
+            const metadata = user.user_metadata
+            const fullNameFromMetadata = getMetadataValue(metadata.full_name)
+            const [firstNameFromFullName = "", ...lastNameParts] = fullNameFromMetadata.split(" ")
+            const firstName = getMetadataValue(metadata.first_name)
+                || getMetadataValue(metadata.name)
+                || firstNameFromFullName
+            const lastName = getMetadataValue(metadata.last_name)
+                || getMetadataValue(metadata.surname)
+                || lastNameParts.join(" ")
+
+            const { error: profileCreateError } = await supabase
+                .from("profiles")
+                .insert({
+                    id: user.id,
+                    first_name: firstName,
+                    last_name: lastName,
+                    bday: getMetadataValue(metadata.bday) || null,
+                    fav_genres: getGenreValues(metadata.fav_genres),
+                    avatar_url: getMetadataValue(metadata.avatar_url) || null,
+                    bio: "",
+                })
+
+            if (profileCreateError) {
+                setError(getFriendlyErrorMessage(profileCreateError, "Could not finish setting up your profile. Please sign in again and try once more."))
+                setIsSaving(false)
+                return
+            }
+        }
+
         const { data, error: saveError } = await supabase
             .from("media_reviews")
             .upsert({
@@ -119,12 +172,13 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
         setIsSaving(false)
 
         if (saveError) {
-            setError(saveError.message)
+            setError(getFriendlyErrorMessage(saveError, "Could not save your review. Please try again."))
             return
         }
 
         setReview(data as Review)
         setComment(data.comment ?? "")
+        setIsReviewEditorOpen(false)
         window.dispatchEvent(new CustomEvent("media-review-change", {
             detail: { mediaId, mediaType },
         }))
@@ -145,7 +199,7 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
         setIsSaving(false)
 
         if (deleteError) {
-            setError(deleteError.message)
+            setError(getFriendlyErrorMessage(deleteError, "Could not delete your review. Please try again."))
             return
         }
 
@@ -199,98 +253,119 @@ export default function MediaReviewForm({ mediaId, mediaType, item }: MediaRevie
                     </button>
                 </div>
             ) : !isReviewEditorOpen ? (
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-[profileModalIn_220ms_ease-out]">
-                    <div>
-                        <h2 className="text-lg font-bold text-slate-100">Watched</h2>
-                        <p className="text-sm text-slate-400 mt-1">Add your rating whenever you want.</p>
+                review ? (
+                    <div className="animate-[profileModalIn_220ms_ease-out]">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                            <div>
+                                <p className="text-xs uppercase tracking-widest text-slate-400 font-semibold">Your review</p>
+                                <p className="mt-2 text-2xl font-bold text-indigo-400">{review.rating}/10</p>
+                                {review.comment ? (
+                                    <p className="mt-3 text-sm leading-6 text-slate-300 whitespace-pre-wrap">{review.comment}</p>
+                                ) : (
+                                    <p className="mt-3 text-sm text-slate-500">No comment added.</p>
+                                )}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsReviewEditorOpen(true)}
+                                className="bg-[#0f172a] border border-[#2d3f55] hover:border-indigo-400/60 text-slate-100 text-sm font-bold px-5 py-3 rounded-xl transition-colors cursor-pointer"
+                            >
+                                Edit review
+                            </button>
+                        </div>
                     </div>
-                    <button
-                        type="button"
-                        onClick={() => setIsReviewEditorOpen(true)}
-                        className="bg-emerald-400 hover:bg-emerald-300 text-[#0f172a] text-sm font-bold px-5 py-3 rounded-xl transition-colors cursor-pointer"
-                    >
-                        Add review
-                    </button>
-                </div>
-            ) : (
-                <div className="animate-[profileModalIn_220ms_ease-out]">
-            <div className="flex items-start justify-between gap-4">
-                <div>
-                    <h2 className="text-lg font-bold text-slate-100">Rate this title</h2>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    {!review && (
+                ) : (
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-[profileModalIn_220ms_ease-out]">
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-100">Watched</h2>
+                            <p className="text-sm text-slate-400 mt-1">Add your rating whenever you want.</p>
+                        </div>
                         <button
                             type="button"
-                            onClick={() => setIsReviewEditorOpen(false)}
-                            disabled={isSaving}
-                            className="text-xs font-bold text-slate-400 hover:text-slate-200 disabled:opacity-60 transition-colors cursor-pointer"
+                            onClick={() => setIsReviewEditorOpen(true)}
+                            className="bg-emerald-400 hover:bg-emerald-300 text-[#0f172a] text-sm font-bold px-5 py-3 rounded-xl transition-colors cursor-pointer"
                         >
-                            Close
+                            Add review
                         </button>
-                    )}
-                    {review && (
-                    <button
-                        type="button"
-                        onClick={handleDelete}
-                        disabled={isSaving}
-                        className="text-xs font-bold text-red-400 hover:text-red-300 disabled:opacity-60 transition-colors cursor-pointer"
-                    >
-                        Delete
-                    </button>
-                    )}
-                </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-                <div>
-                    <p className="block text-xs font-semibold text-slate-400 mb-2">Rating</p>
-                    <div className="flex flex-wrap gap-1.5">
-                        {ratings.map((ratingValue) => (
-                            <button
-                                key={ratingValue}
-                                type="button"
-                                onClick={() => setRating(ratingValue)}
-                                disabled={!user}
-                                className={`w-8 h-8 grid place-items-center rounded-lg border text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                                    rating === ratingValue
-                                        ? "bg-indigo-400 border-indigo-400 text-[#0f172a]"
-                                        : "bg-[#0f172a] border-[#2d3f55] text-slate-300 hover:border-indigo-400/60 hover:text-indigo-400"
-                                }`}
-                            >
-                                {ratingValue}
-                            </button>
-                        ))}
                     </div>
-                </div>
+                )
+            ) : (
+                <div className="animate-[profileModalIn_220ms_ease-out]">
+                    <div className="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-100">{review ? "Edit your review" : "Rate this title"}</h2>
+                        </div>
 
-                <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-1.5">
-                        Comment
-                    </label>
-                    <textarea
-                        value={comment}
-                        onChange={(event) => setComment(event.target.value)}
-                        disabled={!user}
-                        rows={4}
-                        maxLength={500}
-                        placeholder="What did you think?"
-                        className="w-full resize-none bg-[#0f172a] border border-[#2d3f55] rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 transition-colors disabled:opacity-50"
-                    />
-                    <p className="mt-1 text-xs text-slate-500 text-right">{comment.length}/500</p>
-                </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setIsReviewEditorOpen(false)}
+                                disabled={isSaving}
+                                className="text-xs font-bold text-slate-400 hover:text-slate-200 disabled:opacity-60 transition-colors cursor-pointer"
+                            >
+                                Close
+                            </button>
+                            {review && (
+                                <button
+                                    type="button"
+                                    onClick={handleDelete}
+                                    disabled={isSaving}
+                                    className="text-xs font-bold text-red-400 hover:text-red-300 disabled:opacity-60 transition-colors cursor-pointer"
+                                >
+                                    Delete
+                                </button>
+                            )}
+                        </div>
+                    </div>
 
-                {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
+                    <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+                        <div>
+                            <p className="block text-xs font-semibold text-slate-400 mb-2">Rating</p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {ratings.map((ratingValue) => (
+                                    <button
+                                        key={ratingValue}
+                                        type="button"
+                                        onClick={() => setRating(ratingValue)}
+                                        disabled={!user}
+                                        className={`w-8 h-8 grid place-items-center rounded-lg border text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                                            rating === ratingValue
+                                                ? "bg-indigo-400 border-indigo-400 text-[#0f172a]"
+                                                : "bg-[#0f172a] border-[#2d3f55] text-slate-300 hover:border-indigo-400/60 hover:text-indigo-400"
+                                        }`}
+                                    >
+                                        {ratingValue}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
-                <button
-                    type="submit"
-                    disabled={!user || isSaving}
-                    className="bg-[#d11c7f] hover:bg-[#b01368] disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.99] text-white text-sm font-bold px-5 py-3 rounded-xl transition-all cursor-pointer shadow-lg shadow-[#d11c7f]/10"
-                >
-                    {isSaving ? "Saving..." : review ? "Update review" : "Save review"}
-                </button>
-            </form>
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-400 mb-1.5">
+                                Comment
+                            </label>
+                            <textarea
+                                value={comment}
+                                onChange={(event) => setComment(event.target.value)}
+                                disabled={!user}
+                                rows={4}
+                                maxLength={500}
+                                placeholder="What did you think?"
+                                className="w-full resize-none bg-[#0f172a] border border-[#2d3f55] rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-indigo-400 transition-colors disabled:opacity-50"
+                            />
+                            <p className="mt-1 text-xs text-slate-500 text-right">{comment.length}/500</p>
+                        </div>
+
+                        {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
+
+                        <button
+                            type="submit"
+                            disabled={!user || isSaving}
+                            className="bg-[#d11c7f] hover:bg-[#b01368] disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.99] text-white text-sm font-bold px-5 py-3 rounded-xl transition-all cursor-pointer shadow-lg shadow-[#d11c7f]/10"
+                        >
+                            {isSaving ? "Saving..." : review ? "Update review" : "Save review"}
+                        </button>
+                    </form>
                 </div>
             )}
         </section>

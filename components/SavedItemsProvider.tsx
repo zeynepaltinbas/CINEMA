@@ -1,6 +1,7 @@
 "use client"
 
 import { supabase } from "@/lib/supabase"
+import { getFriendlyErrorMessage } from "@/lib/errorMessages"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import type { ReactNode } from "react"
 import { useAuth } from "./AuthProvider"
@@ -65,7 +66,7 @@ export function SavedItemsProvider({ children }: { children: ReactNode }) {
                 if (!isMounted) return
 
                 if (error) {
-                    showNotification(error.message)
+                    showNotification(getFriendlyErrorMessage(error, "Could not load your saved items. Please try again."))
                     setIsSavedItemsLoading(false)
                     return
                 }
@@ -121,7 +122,7 @@ export function SavedItemsProvider({ children }: { children: ReactNode }) {
                 .eq("id", existingItem.id)
 
             if (error) {
-                showNotification(error.message)
+                showNotification(getFriendlyErrorMessage(error, `Could not remove this from ${listType}. Please try again.`))
             } else {
                 setSavedItems((currentItems) => currentItems.filter((savedItem) => savedItem.id !== existingItem.id))
                 showNotification(`Removed from ${listType}.`)
@@ -139,7 +140,7 @@ export function SavedItemsProvider({ children }: { children: ReactNode }) {
                 .single()
 
             if (error) {
-                showNotification(error.message)
+                showNotification(getFriendlyErrorMessage(error, `Could not add this to ${listType}. Please try again.`))
             } else {
                 setSavedItems((currentItems) => [...currentItems, data as SavedItem])
                 showNotification(`Added to ${listType}.`)

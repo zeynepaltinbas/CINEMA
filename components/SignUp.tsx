@@ -1,6 +1,7 @@
 "use client"
 
 import { supabase } from "@/lib/supabase";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { SubmitEvent, useState } from "react";
 
 interface SignUpProps {
@@ -41,7 +42,7 @@ export default function SignUp({ isOpen, onClose, onSwitchToSignIn, onSuccess }:
 
         if (signUpError) {
             setIsLoading(false)
-            setError(signUpError.message)
+            setError(getFriendlyErrorMessage(signUpError, "Could not create your account. Please check your details and try again."))
             return
         }
 

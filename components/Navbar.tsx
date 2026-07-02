@@ -1,5 +1,6 @@
 "use client"
 import Link from "next/link";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import SortMenu from "./SortMenu";
@@ -207,7 +208,7 @@ export default function Navbar() {
             router.push("/movies")
             router.refresh()
         } catch (error) {
-            showNotification(error instanceof Error ? error.message : "Could not sign out. Please try again.")
+            showNotification(getFriendlyErrorMessage(error, "Could not sign out. Please try again."))
         }
     }
 

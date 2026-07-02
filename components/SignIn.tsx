@@ -1,6 +1,7 @@
 "use client"
 
 import { supabase } from "@/lib/supabase";
+import { getFriendlyErrorMessage } from "@/lib/errorMessages";
 import { useState } from "react";
 import type { SubmitEvent } from "react";
 
@@ -29,7 +30,7 @@ export default function SignIn({ isOpen, onClose, onSwitchToSignUp, onSuccess }:
         setIsLoading(false)
 
         if (signInError) {
-            setError(signInError.message)
+            setError(getFriendlyErrorMessage(signInError, "Could not sign in. Please check your details and try again."))
             return
         }
 

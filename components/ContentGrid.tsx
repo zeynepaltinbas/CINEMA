@@ -1,4 +1,5 @@
 import Pagination from "@/components/Pagination"
+import SelectedFilters from "@/components/SelectedFilters"
 import ShowBox from "@/components/ShowBox"
 import type { MediaItem } from "@/types/media"
 
@@ -27,6 +28,13 @@ export default function ContentGrid({ title, items, totalPages, currentPage, sea
                         {title}
                     </h1>
                 )}
+                <SelectedFilters
+                    searchQuery={searchQuery}
+                    currentSort={currentSort}
+                    currentGenre={currentGenre}
+                    currentTab={currentTab}
+                    type={type}
+                />
             </div>
 
             {items.length > 0 ? (
