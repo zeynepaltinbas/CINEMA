@@ -1,11 +1,10 @@
 "use client"
 
 import { supabase } from "@/lib/supabase"
+import { getFriendlyErrorMessage } from "@/lib/errorMessages"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useNotification } from "./NotificationProvider"
-import { MediaItem } from "@/types/media"
-import { TMDB_IMAGE_BASE_URL } from "@/lib/tmdb"
 
 type MediaType = "movie" | "tv"
 
@@ -15,7 +14,7 @@ interface MediaReview {
     media_type: MediaType;
     rating: number;
     comment: string | null;
-    item: MediaItem;
+    item: Record<string, unknown>;
     updated_at: string;
 }
 
@@ -23,7 +22,7 @@ interface ProfileReviewsProps {
     userId: string;
 }
 
-function getItemTitle(item: MediaItem) {
+function getItemTitle(item: Record<string, unknown>) {
     return typeof item.title === "string"
         ? item.title
         : typeof item.name === "string"
@@ -31,7 +30,7 @@ function getItemTitle(item: MediaItem) {
             : "Untitled"
 }
 
-function getItemYear(item: MediaItem) {
+function getItemYear(item: Record<string, unknown>) {
     const date = typeof item.release_date === "string"
         ? item.release_date
         : typeof item.first_air_date === "string"
@@ -41,7 +40,7 @@ function getItemYear(item: MediaItem) {
     return date ? date.slice(0, 4) : ""
 }
 
-function getPosterPath(item: MediaItem) {
+function getPosterPath(item: Record<string, unknown>) {
     return typeof item.poster_path === "string" ? item.poster_path : ""
 }
 
@@ -75,7 +74,7 @@ export default function ProfileReviews({ userId }: ProfileReviewsProps) {
                 if (!isMounted) return
 
                 if (reviewsError) {
-                    setError(reviewsError.message)
+                    setError(getFriendlyErrorMessage(reviewsError, "Could not load your reviews. Please try again."))
                     setIsLoading(false)
                     return
                 }
@@ -101,7 +100,7 @@ export default function ProfileReviews({ userId }: ProfileReviewsProps) {
         setDeletingId("")
 
         if (deleteError) {
-            setError(deleteError.message)
+            setError(getFriendlyErrorMessage(deleteError, "Could not delete this review. Please try again."))
             return
         }
 
@@ -144,7 +143,7 @@ export default function ProfileReviews({ userId }: ProfileReviewsProps) {
                                     <div className="w-14 h-20 shrink-0 rounded-lg overflow-hidden bg-[#1e293b] border border-[#2d3f55]">
                                         {posterPath ? (
                                             <img
-                                                src={`${TMDB_IMAGE_BASE_URL}/w185${posterPath}`}
+                                                src={`https://image.tmdb.org/t/p/w185${posterPath}`}
                                                 alt={title}
                                                 className="w-full h-full object-cover"
                                             />

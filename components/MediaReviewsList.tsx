@@ -1,6 +1,7 @@
 "use client"
 
 import { supabase } from "@/lib/supabase"
+import { getFriendlyErrorMessage } from "@/lib/errorMessages"
 import { useAuth } from "./AuthProvider"
 import { useCallback, useEffect, useState } from "react"
 
@@ -79,7 +80,7 @@ export default function MediaReviewsList({ mediaId, mediaType }: MediaReviewsLis
             .order("updated_at", { ascending: false })
 
         if (reviewsError) {
-            setError(reviewsError.message)
+            setError(getFriendlyErrorMessage(reviewsError, "Could not load community reviews. Please try again."))
             setIsLoading(false)
             return
         }
@@ -94,7 +95,7 @@ export default function MediaReviewsList({ mediaId, mediaType }: MediaReviewsLis
                 .in("id", userIds)
 
             if (profilesError) {
-                setError(profilesError.message)
+                setError(getFriendlyErrorMessage(profilesError, "Could not load reviewer details. Please try again."))
                 setIsLoading(false)
                 return
             }
@@ -118,7 +119,7 @@ export default function MediaReviewsList({ mediaId, mediaType }: MediaReviewsLis
                 .in("review_id", reviewIds)
 
             if (reactionsError) {
-                setError(reactionsError.message)
+                setError(getFriendlyErrorMessage(reactionsError, "Could not load review reactions. Please try again."))
                 setIsLoading(false)
                 return
             }
@@ -194,7 +195,7 @@ export default function MediaReviewsList({ mediaId, mediaType }: MediaReviewsLis
                 .eq("user_id", user.id)
 
             if (deleteError) {
-                setError(deleteError.message)
+                setError(getFriendlyErrorMessage(deleteError, "Could not update your reaction. Please try again."))
             }
         } else if (currentReaction) {
             const { error: updateError } = await supabase
@@ -204,7 +205,7 @@ export default function MediaReviewsList({ mediaId, mediaType }: MediaReviewsLis
                 .eq("user_id", user.id)
 
             if (updateError) {
-                setError(updateError.message)
+                setError(getFriendlyErrorMessage(updateError, "Could not update your reaction. Please try again."))
             }
         } else {
             const { error: insertError } = await supabase
@@ -216,7 +217,7 @@ export default function MediaReviewsList({ mediaId, mediaType }: MediaReviewsLis
                 })
 
             if (insertError) {
-                setError(insertError.message)
+                setError(getFriendlyErrorMessage(insertError, "Could not save your reaction. Please try again."))
             }
         }
 
