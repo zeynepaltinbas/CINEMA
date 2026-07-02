@@ -1,6 +1,7 @@
 "use client"
 
 // https://developer.themoviedb.org/reference/discover-movie
+import { useEffect, useState } from "react"
 
 interface SortMenuProps {
     currentFilters: string;
@@ -53,29 +54,81 @@ export const profileGenres = Array.from(
 export default function SortMenu({ currentFilters, currentGenre, type = "movies" }: SortMenuProps) {
     const isMovie = type === "movies"
     const genres = isMovie ? movieGenres : tvGenres
+    const [selectedGenres, setSelectedGenres] = useState<string[]>(currentGenre.split(",").filter(Boolean))
+    const selectedGenreLabels = selectedGenres
+        .map((genreValue) => genres.find((genre) => genre.value === genreValue)?.label)
+        .filter(Boolean)
+
+    useEffect(() => {
+        setSelectedGenres(currentGenre.split(",").filter(Boolean))
+    }, [currentGenre])
+
+    function updateGenres(genreValue: string) {
+        const nextGenres = selectedGenres.includes(genreValue)
+            ? selectedGenres.filter((value) => value !== genreValue)
+            : [...selectedGenres, genreValue]
+
+        setSelectedGenres(nextGenres)
+    }
+
+    function clearGenres() {
+        setSelectedGenres([])
+    }
 
     return (
         <form action={`/${type}`} method="GET" className="flex flex-col md:flex-row gap-3 w-full">            
             {/* filter by genre */}
             <div className="w-full md:w-48 flex flex-col gap-1.5">
-                <label htmlFor="genre-filter" className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Genre
-                </label>
-                <select name="genre" id="genre-filter" value={currentGenre || ""} 
-                    // e: the event object
-                    // target: the HTML element that triggered the event
-                    // form? : if the form cannot be found for some reason, do not crash the website
-                    // submit(): submit the form immediately, even without a submit button
-                    onChange={(e) => e.target.form?.submit()}
-                    className="w-full bg-[#0f172a] border border-[#2d3f55] rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-400 cursor-pointer"
-                >
-                    <option value="">All Genres</option>
-                    {genres.map((genre) => (
-                        <option key={genre.value} value={genre.value}>
-                            {genre.label}
-                        </option>
-                    ))}
-                </select>
+                <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        Genre
+                    </p>
+                    {selectedGenres.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={clearGenres}
+                            className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 cursor-pointer"
+                        >
+                            Clear
+                        </button>
+                    )}
+                </div>
+                <input type="hidden" name="genre" value={selectedGenres.join(",")} readOnly />
+                <details className="group relative">
+                    <summary className="flex w-full list-none items-center justify-between gap-3 rounded-xl border border-[#2d3f55] bg-[#0f172a] px-3 py-2 text-left text-sm text-slate-100 transition-colors hover:border-indigo-400/70 cursor-pointer [&::-webkit-details-marker]:hidden">
+                        <span className="truncate">
+                        {selectedGenres.length === 0
+                            ? "All Genres"
+                            : selectedGenres.length === 1
+                                ? selectedGenreLabels[0]
+                                : `${selectedGenres.length} genres selected`}
+                        </span>
+                        <span className="text-slate-500">⌄</span>
+                    </summary>
+                    <div className="absolute left-0 right-0 top-full z-80 mt-2 max-h-56 overflow-y-auto rounded-xl border border-[#2d3f55] bg-[#0f172a] p-2 shadow-2xl">
+                        {genres.map((genre) => (
+                            <label
+                                key={genre.value}
+                                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:bg-[#1e293b] cursor-pointer"
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={selectedGenres.includes(genre.value)}
+                                    onChange={() => updateGenres(genre.value)}
+                                    className="accent-indigo-400"
+                                />
+                                <span>{genre.label}</span>
+                            </label>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={(e) => e.currentTarget.form?.requestSubmit()}
+                            className="mt-2 w-full rounded-lg bg-indigo-400 px-3 py-2 text-xs font-bold text-[#0f172a] transition-colors hover:bg-indigo-300 cursor-pointer"
+                        >
+                            Apply Genres
+                        </button>
+                    </div>
+                </details>
             </div>
 
             {/* sort by */}

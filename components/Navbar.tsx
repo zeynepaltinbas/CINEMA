@@ -287,11 +287,11 @@ export default function Navbar() {
                                 </button>
                             </div>
 
-                            <div className={`absolute top-full left-0 right-0 mt-2 bg-[#1e293b] border border-[#2d3f55] rounded-xl shadow-2xl p-3.5 grid transition-[grid-template-rows,opacity] duration-300 ease-in-out overflow-hidden z-50 ${
-                                isOpen && isSortAvailable ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"
+                            <div className={`absolute top-full left-0 right-0 mt-2 bg-[#1e293b] border border-[#2d3f55] rounded-xl shadow-2xl p-3.5 grid transition-[grid-template-rows,opacity] duration-300 ease-in-out z-50 ${
+                                isOpen && isSortAvailable ? "grid-rows-[1fr] opacity-100 visible overflow-visible" : "grid-rows-[0fr] opacity-0 invisible overflow-hidden"
                             }`}>
-                                <div className="min-h-0">
-                                    <div className="w-full flex justify-center">
+                                <div className="min-h-0 overflow-visible">
+                                    <div className="w-full flex justify-center overflow-visible">
                                         <SortMenu
                                             currentFilters={currentSort}
                                             currentGenre={currentGenre}
@@ -386,11 +386,11 @@ export default function Navbar() {
                                 </div>
                             </form>
 
-                            <div className={`absolute top-full left-0 right-0 mt-2 bg-[#1e293b] border border-[#2d3f55] rounded-xl shadow-2xl p-3 grid transition-[grid-template-rows,opacity] duration-300 ease-in-out overflow-hidden z-50 ${
-                                isOpen && isSortAvailable ? "grid-rows-[1fr] opacity-100 visible" : "grid-rows-[0fr] opacity-0 invisible"
+                            <div className={`absolute top-full left-0 right-0 mt-2 bg-[#1e293b] border border-[#2d3f55] rounded-xl shadow-2xl p-3 grid transition-[grid-template-rows,opacity] duration-300 ease-in-out z-50 ${
+                                isOpen && isSortAvailable ? "grid-rows-[1fr] opacity-100 visible overflow-visible" : "grid-rows-[0fr] opacity-0 invisible overflow-hidden"
                             }`}>
-                                <div className="min-h-0">
-                                    <div className="w-full flex justify-center scale-95 origin-top [&>div]:flex-col [&>div]:gap-3">
+                                <div className="min-h-0 overflow-visible">
+                                    <div className="w-full flex justify-center scale-95 origin-top overflow-visible [&>div]:flex-col [&>div]:gap-3">
                                         <SortMenu
                                             currentFilters={currentSort}
                                             currentGenre={currentGenre}
